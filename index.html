@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedTrack · Distribuidora Oscar Navarro</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--bg2:#161820;--bg3:#1d1f2a;--bg4:#252836;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);--text:#e8eaf0;--text2:#9399a8;--text3:#5c6070;--accent:#4f9cf9;--accent2:#3b7de0;--green:#2dd4a0;--green-bg:rgba(45,212,160,0.1);--red:#f96b6b;--red-bg:rgba(249,107,107,0.1);--amber:#f9b84f;--amber-bg:rgba(249,184,79,0.1);--purple:#a78bfa;--purple-bg:rgba(167,139,250,0.1);--teal:#22d3ee;--teal-bg:rgba(34,211,238,0.1);--pink:#f472b6;--pink-bg:rgba(244,114,182,0.1);--radius:10px;--radius-sm:6px;--font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;--nav-w:220px;--sidebar-collapsed:60px;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;}
+button{font-family:var(--font);cursor:pointer;}input,select,textarea{font-family:var(--font);}
+.app{display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:var(--nav-w);min-width:var(--nav-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;transition:width .25s,min-width .25s;overflow:hidden;z-index:100;}
+.sidebar.collapsed{width:var(--sidebar-collapsed);min-width:var(--sidebar-collapsed);}
+.sidebar-header{padding:18px 16px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.logo-text{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;}.logo-text span{color:var(--accent);}
+.sidebar-toggle{margin-left:auto;background:none;border:none;color:var(--text3);font-size:18px;padding:2px;flex-shrink:0;}
+.nav-section{padding:10px 8px 4px;}
+.nav-label{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;padding:0 8px 6px;white-space:nowrap;overflow:hidden;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-sm);color:var(--text2);cursor:pointer;user-select:none;transition:all .15s;white-space:nowrap;overflow:hidden;border:none;background:none;width:100%;text-align:left;}
+.nav-item:hover{background:var(--bg3);color:var(--text);}.nav-item.active{background:rgba(79,156,249,0.12);color:var(--accent);}
+.nav-icon{font-size:18px;flex-shrink:0;width:20px;text-align:center;}.nav-text{font-size:13.5px;font-weight:500;}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:600;background:var(--red-bg);color:var(--red);padding:1px 6px;border-radius:20px;}
+.sidebar-footer{margin-top:auto;padding:12px 8px;border-top:1px solid var(--border);}
+.user-card{display:flex;align-items:center;gap:10px;padding:8px 10px;overflow:hidden;}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;}
+.user-name{font-size:13px;font-weight:500;white-space:nowrap;}.user-role{font-size:11px;color:var(--text3);white-space:nowrap;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:56px;padding:0 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--bg);}
+.page-title{font-size:16px;font-weight:600;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;border:none;transition:all .15s;cursor:pointer;}
+.btn-primary{background:var(--accent);color:#fff;}.btn-primary:hover{background:var(--accent2);}
+.btn-ghost{background:none;color:var(--text2);border:1px solid var(--border2);}.btn-ghost:hover{background:var(--bg3);color:var(--text);}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid rgba(249,107,107,0.2);}.btn-danger:hover{background:rgba(249,107,107,0.2);}
+.btn-sm{padding:5px 10px;font-size:12px;}
+.content{flex:1;overflow-y:auto;padding:20px;}.section{display:none;}.section.active{display:block;}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:12px;margin-bottom:20px;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+.stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.stat-val{font-size:24px;font-weight:600;font-family:var(--mono);}.stat-sub{font-size:12px;color:var(--text3);margin-top:4px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px;}
+.card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}.card-title{font-size:14px;font-weight:600;}
+.table-wrap{overflow-x:auto;}table{width:100%;border-collapse:collapse;}
+th{font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--text3);text-transform:uppercase;padding:10px 16px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:11px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(255,255,255,0.02);}
+.mono{font-family:var(--mono);font-size:12px;}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;white-space:nowrap;}
+.badge-green{background:var(--green-bg);color:var(--green);}.badge-red{background:var(--red-bg);color:var(--red);}
+.badge-amber{background:var(--amber-bg);color:var(--amber);}.badge-blue{background:rgba(79,156,249,0.12);color:var(--accent);}
+.badge-purple{background:var(--purple-bg);color:var(--purple);}.badge-teal{background:var(--teal-bg);color:var(--teal);}
+.badge-pink{background:var(--pink-bg);color:var(--pink);}
+.client-type{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;}
+.ct-hospital{background:rgba(79,156,249,0.15);color:var(--accent);}.ct-medico{background:var(--green-bg);color:var(--green);}
+.ct-farmacia{background:var(--purple-bg);color:var(--purple);}.ct-publico{background:var(--amber-bg);color:var(--amber);}.ct-dist{background:var(--teal-bg);color:var(--teal);}
+.modal-overlay{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+.modal-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-size:15px;font-weight:600;}.modal-close{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:14px;}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}.form-group{display:flex;flex-direction:column;gap:5px;}.form-group.full{grid-column:1/-1;}
+label{font-size:12px;font-weight:500;color:var(--text2);}
+input[type=text],input[type=number],input[type=date],input[type=email],select,textarea{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:8px 10px;color:var(--text);font-size:13px;width:100%;outline:none;transition:border .15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);}select option{background:var(--bg3);}textarea{resize:vertical;min-height:60px;}
+.temp-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-family:var(--mono);padding:2px 8px;border-radius:20px;white-space:nowrap;}
+.temp-cold{background:var(--teal-bg);color:var(--teal);}.temp-ambient{background:var(--amber-bg);color:var(--amber);}
+.prog-bar{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-top:4px;}
+.prog-fill{height:100%;border-radius:3px;transition:width .3s;}
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 12px;}
+.search-bar input{background:none;border:none;color:var(--text);font-size:13px;outline:none;width:100%;}
+.search-bar span{color:var(--text3);font-size:16px;}
+.alert-strip{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:8px;font-size:13px;}
+.alert-amber{background:var(--amber-bg);border:1px solid rgba(249,184,79,0.2);color:var(--amber);}
+.alert-red{background:var(--red-bg);border:1px solid rgba(249,107,107,0.2);color:var(--red);}
+.vnd-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.vnd-name{width:68px;font-size:13px;font-weight:500;flex-shrink:0;}
+.vnd-bar-wrap{flex:1;height:18px;background:var(--bg4);border-radius:4px;overflow:hidden;}
+.vnd-bar-fill{height:100%;border-radius:4px;transition:width .5s;}
+.vnd-amt{font-size:12px;font-family:var(--mono);color:var(--text2);min-width:80px;text-align:right;}
+.util-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;}
+.util-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;}
+.util-val{font-size:18px;font-weight:600;font-family:var(--mono);}
+.util-neta{background:var(--bg4);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:14px;display:flex;justify-content:space-between;align-items:center;}
+@media(max-width:640px){
+  .sidebar{position:fixed;top:0;left:0;height:100vh;z-index:200;transform:translateX(-100%);transition:transform .25s;}
+  .sidebar.open{transform:translateX(0);}.sidebar.collapsed{transform:translateX(-100%);}
+  .mobile-toggle{display:flex!important;}.form-row{grid-template-columns:1fr;}.stats-grid{grid-template-columns:1fr 1fr;}
+  .topbar{padding:0 12px;}.content{padding:12px;}
+  .dash-two-col{grid-template-columns:1fr!important;}
+}
+.mobile-toggle{display:none;background:none;border:none;color:var(--text);font-size:22px;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="app">
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-icon">💊</div>
+    <div class="logo-text"><span>Med</span>Track</div>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">◀</button>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Principal</div>
+    <button class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">▦</span><span class="nav-text">Dashboard</span></button>
+    <button class="nav-item" onclick="nav('inventario',this)"><span class="nav-icon">📦</span><span class="nav-text">Inventario</span><span class="nav-badge" id="badge-inv">0</span></button>
+    <button class="nav-item" onclick="nav('entradas',this)"><span class="nav-icon">⬇</span><span class="nav-text">Entradas</span></button>
+    <button class="nav-item" onclick="nav('salidas',this)"><span class="nav-icon">⬆</span><span class="nav-text">Salidas</span></button>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Gestión</div>
+    <button class="nav-item" onclick="nav('proveedores',this)"><span class="nav-icon">🏭</span><span class="nav-text">Proveedores</span></button>
+    <button class="nav-item" onclick="nav('clientes',this)"><span class="nav-icon">🏥</span><span class="nav-text">Clientes</span></button>
+    <button class="nav-item" onclick="nav('gastos',this)"><span class="nav-icon">💰</span><span class="nav-text">Gastos</span></button>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">ON</div>
+      <div style="overflow:hidden"><div class="user-name">Oscar Navarro</div><div class="user-role">Administrador</div></div>
+    </div>
+  </div>
+</nav>
+<div class="main">
+  <div class="topbar">
+    <button class="mobile-toggle" onclick="openMobile()">☰</button>
+    <div><div class="page-title" id="page-title">Dashboard</div><div style="font-size:12px;color:var(--text3)" id="page-sub"><span id="today-date"></span></div></div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ CSV</button>
+      <button class="btn btn-primary btn-sm" id="btn-add" onclick="openAddModal()">+ Nuevo</button>
+    </div>
+  </div>
+  <div class="content">
+
+  <!-- DASHBOARD -->
+  <div class="section active" id="sec-dashboard">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">SKUs activos</div><div class="stat-val" style="color:var(--accent)" id="ds-skus">0</div><div class="stat-sub">productos</div></div>
+      <div class="stat-card"><div class="stat-label">Alertas caducidad</div><div class="stat-val" style="color:var(--red)" id="ds-cad">0</div><div class="stat-sub">próx. 30 días</div></div>
+      <div class="stat-card"><div class="stat-label">Clientes</div><div class="stat-val" style="color:var(--green)" id="ds-cli">0</div><div class="stat-sub">registrados</div></div>
+      <div class="stat-card"><div class="stat-label">Proveedores</div><div class="stat-val" style="color:var(--purple)" id="ds-prov">0</div><div class="stat-sub">activos</div></div>
+      <div class="stat-card"><div class="stat-label">Venta total</div><div class="stat-val" style="color:var(--green);font-size:18px" id="ds-venta">$0</div><div class="stat-sub" id="ds-venta-sub">0 movimientos</div></div>
+      <div class="stat-card"><div class="stat-label">Costo total</div><div class="stat-val" style="color:var(--red);font-size:18px" id="ds-costo">$0</div><div class="stat-sub">mercancía + gastos</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" class="dash-two-col">
+      <!-- Ventas por vendedor -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">👤 Ventas por vendedor</div></div>
+        <div style="padding:16px" id="vnd-panel"><div style="color:var(--text3);font-size:13px;text-align:center;padding:12px">Sin ventas registradas</div></div>
+        <div style="padding:10px 16px 14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">Total general</span>
+          <span style="font-size:16px;font-weight:600;font-family:var(--mono);color:var(--green)" id="vnd-total">$0</span>
+        </div>
+      </div>
+      <!-- Utilidades -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">📈 Utilidades del mes</div></div>
+        <div style="padding:14px;display:flex;flex-direction:column;gap:8px">
+          <div class="util-box"><div><div class="util-label">Ingresos (ventas)</div><div style="font-size:11px;color:var(--text3)">precio venta × piezas</div></div><div class="util-val" style="color:var(--green)" id="ut-ingresos">$0</div></div>
+          <div class="util-box"><div><div class="util-label">Costo mercancía vendida</div><div style="font-size:11px;color:var(--text3)">costo unit. × piezas vendidas</div></div><div class="util-val" style="color:var(--red)" id="ut-cmv">$0</div></div>
+          <div class="util-box"><div><div class="util-label">Gastos operativos</div><div style="font-size:11px;color:var(--text3)">flete, almacén, personal...</div></div><div class="util-val" style="color:var(--amber)" id="ut-gastos">$0</div></div>
+          <div class="util-neta">
+            <div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">Utilidad neta</div><div style="font-size:10px;color:var(--text3);margin-top:2px">ingresos − CMV − gastos</div></div>
+            <div style="text-align:right"><div style="font-size:22px;font-weight:600;font-family:var(--mono)" id="ut-neta">$0</div><div style="font-size:12px;font-family:var(--mono);margin-top:2px" id="ut-margen">0% margen</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="dash-two-col">
+      <div class="card">
+        <div class="card-header"><div class="card-title">⚠ Alertas activas</div></div>
+        <div id="alerts-panel" style="padding:12px 16px"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">🕐 Actividad reciente</div></div>
+        <div id="recent-activity"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INVENTARIO -->
+  <div class="section" id="sec-inventario">
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <div class="search-bar" style="flex:1;min-width:180px"><span>🔍</span><input type="text" id="inv-search" placeholder="Nombre, clave, lote..." oninput="renderInventario()"></div>
+      <select id="inv-filter-temp" style="width:auto" onchange="renderInventario()"><option value="">Toda temp.</option><option value="fria">Cadena fría</option><option value="ambiente">Ambiente</option></select>
+      <select id="inv-filter-status" style="width:auto" onchange="renderInventario()"><option value="">Todo estado</option><option value="ok">Normal</option><option value="bajo">Stock bajo</option><option value="caducando">Por caducar</option><option value="caducado">Caducado</option></select>
+    </div>
+    <div class="card"><div class="table-wrap"><table><thead><tr><th>Clave</th><th>Nombre</th><th>Lote</th><th>Caducidad</th><th>Temp.</th><th>Proveedor</th><th>Costo unit.</th><th>Stock</th><th>Estado</th><th></th></tr></thead><tbody id="inv-tbody"></tbody></table></div></div>
+  </div>
+
+  <!-- ENTRADAS -->
+  <div class="section" id="sec-entradas">
+    <div style="display:flex;gap:10px;margin-bottom:16px">
+      <div class="search-bar" style="flex:1"><span>🔍</span><input type="text" id="ent-search" placeholder="Buscar entrada..." oninput="renderEntradas()"></div>
+    </div>
+    <div class="card"><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Clave</th><th>Producto</th><th>Lote</th><th>Caducidad</th><th>Temp.</th><th>Proveedor</th><th>Piezas</th><th>Costo unit.</th><th>Total costo</th></tr></thead><tbody id="ent-tbody"></tbody></table></div></div>
+  </div>
+
+  <!-- SALIDAS -->
+  <div class="section" id="sec-salidas">
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <div class="search-bar" style="flex:1;min-width:180px"><span>🔍</span><input type="text" id="sal-search" placeholder="Producto, cliente..." oninput="renderSalidas()"></div>
+      <select id="sal-filter-vnd" style="width:auto" onchange="renderSalidas()"><option value="">Todos vendedores</option><option value="Daniel">Daniel</option><option value="Oscar">Oscar</option><option value="Cesar">Cesar</option><option value="PROBISA">PROBISA</option></select>
+    </div>
+    <div class="card"><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Clave</th><th>Producto</th><th>Lote</th><th>Cliente</th><th>Tipo</th><th>Vendedor</th><th>Piezas</th><th>Precio unit.</th><th>Total venta</th><th>Utilidad</th></tr></thead><tbody id="sal-tbody"></tbody></table></div></div>
+  </div>
+
+  <!-- PROVEEDORES -->
+  <div class="section" id="sec-proveedores">
+    <div style="display:flex;gap:10px;margin-bottom:16px">
+      <div class="search-bar" style="flex:1"><span>🔍</span><input type="text" id="prov-search" placeholder="Buscar proveedor..." oninput="renderProveedores()"></div>
+    </div>
+    <div class="card"><div class="table-wrap"><table><thead><tr><th>Proveedor</th><th>Contacto</th><th>Teléfono</th><th>Email</th><th>Crédito</th><th>Días</th><th>Saldo</th><th>Estado</th><th></th></tr></thead><tbody id="prov-tbody"></tbody></table></div></div>
+  </div>
+
+  <!-- CLIENTES -->
+  <div class="section" id="sec-clientes">
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <div class="search-bar" style="flex:1;min-width:180px"><span>🔍</span><input type="text" id="cli-search" placeholder="Buscar cliente..." oninput="renderClientes()"></div>
+      <select id="cli-filter-tipo" style="width:auto" onchange="renderClientes()"><option value="">Todos los tipos</option><option value="Hospital">Hospital/Clínica</option><option value="Médico">Médico</option><option value="Farmacia">Farmacia</option><option value="Público">Sector público</option><option value="Distribuidor">Distribuidor</option></select>
+    </div>
+    <div class="card"><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Tipo</th><th>Contacto</th><th>Teléfono</th><th>RFC</th><th>Crédito</th><th>Saldo</th><th>Estado</th><th></th></tr></thead><tbody id="cli-tbody"></tbody></table></div></div>
+  </div>
+
+  <!-- GASTOS -->
+  <div class="section" id="sec-gastos">
+    <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr));margin-bottom:16px">
+      <div class="stat-card"><div class="stat-label">Flete</div><div class="stat-val" style="font-size:16px;color:var(--amber)" id="g-flete">$0</div></div>
+      <div class="stat-card"><div class="stat-label">Almacén</div><div class="stat-val" style="font-size:16px;color:var(--purple)" id="g-almacen">$0</div></div>
+      <div class="stat-card"><div class="stat-label">Personal</div><div class="stat-val" style="font-size:16px;color:var(--accent)" id="g-personal">$0</div></div>
+      <div class="stat-card"><div class="stat-label">Servicios</div><div class="stat-val" style="font-size:16px;color:var(--green)" id="g-servicios">$0</div></div>
+      <div class="stat-card"><div class="stat-label">Otros</div><div class="stat-val" style="font-size:16px;color:var(--text2)" id="g-otros">$0</div></div>
+      <div class="stat-card"><div class="stat-label">Total mes</div><div class="stat-val" style="font-size:16px;color:var(--red)" id="g-total">$0</div></div>
+    </div>
+    <div class="card"><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Referencia</th><th>Monto</th><th>Comprobante</th><th>Deducible</th><th></th></tr></thead><tbody id="gas-tbody"></tbody></table></div></div>
+  </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- MODAL ENTRADA -->
+<div class="modal-overlay" id="modal-inventario">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Registrar entrada de mercancía</div><button class="modal-close" onclick="closeModal('modal-inventario')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><div class="form-group"><label>Clave / SKU *</label><input type="text" id="f-clave" placeholder="ONS-BEV-01"></div><div class="form-group"><label>Temperatura</label><select id="f-temp"><option value="ambiente">Ambiente</option><option value="fria">Cadena fría (2–8°C)</option></select></div></div>
+      <div class="form-group full"><label>Nombre del producto *</label><input type="text" id="f-nombre" placeholder="Nombre genérico / marca"></div>
+      <div class="form-row"><div class="form-group"><label>Número de lote *</label><input type="text" id="f-lote" placeholder="Lote del laboratorio"></div><div class="form-group"><label>Fecha de caducidad *</label><input type="date" id="f-caducidad"></div></div>
+      <div class="form-row"><div class="form-group"><label>Proveedor</label><select id="f-proveedor"><option value="">-- Seleccionar --</option></select></div><div class="form-group"><label>Piezas recibidas *</label><input type="number" id="f-qty" min="1" placeholder="0"></div></div>
+      <div class="form-row"><div class="form-group"><label>Costo unitario (MXN) *</label><input type="number" id="f-costo" min="0" step="0.01" placeholder="0.00"></div><div class="form-group"><label>Stock mínimo alerta</label><input type="number" id="f-minstock" min="0" placeholder="5"></div></div>
+      <div class="form-group"><label>Notas</label><textarea id="f-notas" placeholder="Condiciones, observaciones..."></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-inventario')">Cancelar</button><button class="btn btn-primary" onclick="saveEntrada()">Guardar entrada</button></div>
+  </div>
+</div>
+
+<!-- MODAL SALIDA -->
+<div class="modal-overlay" id="modal-salida">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Registrar salida de mercancía</div><button class="modal-close" onclick="closeModal('modal-salida')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><div class="form-group"><label>Producto *</label><select id="fs-producto" onchange="fillSalidaProduct()"><option value="">-- Seleccionar --</option></select></div><div class="form-group"><label>Lote disponible</label><select id="fs-lote"><option value="">--</option></select></div></div>
+      <div class="form-row"><div class="form-group"><label>Cliente *</label><select id="fs-cliente"><option value="">-- Seleccionar --</option></select></div><div class="form-group"><label>Vendedor *</label><select id="fs-vendedor"><option value="Daniel">Daniel</option><option value="Oscar">Oscar</option><option value="Cesar">Cesar</option><option value="PROBISA">PROBISA</option></select></div></div>
+      <div class="form-row"><div class="form-group"><label>Piezas *</label><input type="number" id="fs-qty" min="1" placeholder="0" oninput="calcTotals()"></div><div class="form-group"><label>Precio de venta por pieza (MXN) *</label><input type="number" id="fs-precio" min="0" step="0.01" placeholder="0.00" oninput="calcTotals()"></div></div>
+      <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;border:1px solid var(--border)">
+        <div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Costo total</div><div style="font-size:14px;font-weight:600;font-family:var(--mono);color:var(--red)" id="fs-costo-total">$0</div></div>
+        <div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Venta total</div><div style="font-size:14px;font-weight:600;font-family:var(--mono);color:var(--green)" id="fs-venta-total">$0</div></div>
+        <div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Utilidad</div><div style="font-size:14px;font-weight:600;font-family:var(--mono);color:var(--accent)" id="fs-utilidad">$0</div></div>
+      </div>
+      <div class="form-row"><div class="form-group"><label>Fecha</label><input type="date" id="fs-fecha"></div><div class="form-group"><label>Referencia / Folio</label><input type="text" id="fs-ref" placeholder="Pedido, factura..."></div></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-salida')">Cancelar</button><button class="btn btn-primary" onclick="saveSalida()">Guardar salida</button></div>
+  </div>
+</div>
+
+<!-- MODAL PROVEEDOR -->
+<div class="modal-overlay" id="modal-proveedor">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Registrar proveedor</div><button class="modal-close" onclick="closeModal('modal-proveedor')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Nombre / Razón social *</label><input type="text" id="fp-nombre" placeholder="Laboratorio o distribuidor"></div>
+      <div class="form-row"><div class="form-group"><label>Contacto</label><input type="text" id="fp-contacto" placeholder="Representante"></div><div class="form-group"><label>Teléfono</label><input type="text" id="fp-tel" placeholder="(33) 0000-0000"></div></div>
+      <div class="form-row"><div class="form-group"><label>Email</label><input type="email" id="fp-email" placeholder="correo@lab.com"></div><div class="form-group"><label>RFC</label><input type="text" id="fp-rfc" placeholder="ABC123456XYZ"></div></div>
+      <div class="form-row"><div class="form-group"><label>Límite crédito (MXN)</label><input type="number" id="fp-credito" min="0" placeholder="0"></div><div class="form-group"><label>Días de crédito</label><input type="number" id="fp-dias" min="0" placeholder="30"></div></div>
+      <div class="form-row"><div class="form-group"><label>Tipo</label><select id="fp-tipo"><option value="formal">Formal / Laboratorio</option><option value="informal">Informal / Alterno</option></select></div><div class="form-group"><label>Estado</label><select id="fp-estado"><option value="activo">Activo</option><option value="inactivo">Inactivo</option></select></div></div>
+      <div class="form-group"><label>Notas</label><textarea id="fp-notas" placeholder="Categorías, condiciones especiales..."></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-proveedor')">Cancelar</button><button class="btn btn-primary" onclick="saveProveedor()">Guardar proveedor</button></div>
+  </div>
+</div>
+
+<!-- MODAL CLIENTE -->
+<div class="modal-overlay" id="modal-cliente">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Registrar cliente</div><button class="modal-close" onclick="closeModal('modal-cliente')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Nombre / Razón social *</label><input type="text" id="fc-nombre" placeholder="Hospital, clínica, médico..."></div>
+      <div class="form-row"><div class="form-group"><label>Tipo de cliente</label><select id="fc-tipo"><option value="Hospital">Hospital / Clínica privada</option><option value="Médico">Médico independiente</option><option value="Farmacia">Farmacia</option><option value="Público">Sector público / IMSS / ISSSTE</option><option value="Distribuidor">Distribuidor</option></select></div><div class="form-group"><label>Contacto</label><input type="text" id="fc-contacto" placeholder="Nombre de contacto"></div></div>
+      <div class="form-row"><div class="form-group"><label>Teléfono</label><input type="text" id="fc-tel" placeholder="(33) 0000-0000"></div><div class="form-group"><label>Email</label><input type="email" id="fc-email" placeholder="correo@cliente.com"></div></div>
+      <div class="form-row"><div class="form-group"><label>RFC</label><input type="text" id="fc-rfc" placeholder="ABC123456XYZ"></div><div class="form-group"><label>Límite de crédito (MXN)</label><input type="number" id="fc-credito" min="0" placeholder="0"></div></div>
+      <div class="form-group"><label>Dirección</label><textarea id="fc-dir" placeholder="Calle, colonia, ciudad..."></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-cliente')">Cancelar</button><button class="btn btn-primary" onclick="saveCliente()">Guardar cliente</button></div>
+  </div>
+</div>
+
+<!-- MODAL GASTO -->
+<div class="modal-overlay" id="modal-gasto">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Registrar gasto operativo</div><button class="modal-close" onclick="closeModal('modal-gasto')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><div class="form-group"><label>Fecha</label><input type="date" id="fg-fecha"></div><div class="form-group"><label>Categoría</label><select id="fg-categoria"><option value="Flete">Flete / Transporte</option><option value="Almacén">Almacén / Bodega</option><option value="Personal">Personal / Nómina</option><option value="Servicios">Servicios</option><option value="Otros">Otros</option></select></div></div>
+      <div class="form-group"><label>Concepto *</label><input type="text" id="fg-concepto" placeholder="Descripción del gasto"></div>
+      <div class="form-row"><div class="form-group"><label>Monto (MXN) *</label><input type="number" id="fg-monto" min="0" step="0.01" placeholder="0.00"></div><div class="form-group"><label>Proveedor / Referencia</label><input type="text" id="fg-ref" placeholder="Quién cobró / N° factura"></div></div>
+      <div class="form-row"><div class="form-group"><label>Comprobante</label><select id="fg-comprobante"><option value="Factura">Factura (CFDI)</option><option value="Ticket">Ticket / Recibo</option><option value="Sin comprobante">Sin comprobante</option></select></div><div class="form-group"><label>Deducible</label><select id="fg-deducible"><option value="Sí">Sí</option><option value="No">No</option></select></div></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-gasto')">Cancelar</button><button class="btn btn-primary" onclick="saveGasto()">Guardar gasto</button></div>
+  </div>
+</div>
+
+<script>
+const DB={inventario:[],entradas:[],salidas:[],proveedores:[],clientes:[],gastos:[]};
+let cur='dashboard';let _id=1000;const uid=()=>++_id;
+const VENDEDORES=['Daniel','Oscar','Cesar','PROBISA'];
+const VND_C={Daniel:'var(--accent)',Oscar:'var(--green)',Cesar:'var(--purple)',PROBISA:'var(--amber)'};
+const VND_B={Daniel:'badge-blue',Oscar:'badge-green',Cesar:'badge-purple',PROBISA:'badge-amber'};
+// SEED
+(function(){
+DB.proveedores=[{id:1,nombre:'Laboratorios PISA',contacto:'Mtra. García',tel:'(33) 3678-0000',email:'ventas@pisa.com.mx',rfc:'LPI830101AAA',credito:50000,dias:30,tipo:'formal',estado:'activo',notas:'Oncológicos y biológicos',saldo:12400},{id:2,nombre:'Chinoin S.A.',contacto:'Ing. Ramos',tel:'(55) 5728-0000',email:'dist@chinoin.com',rfc:'CHI750202BBB',credito:30000,dias:45,tipo:'formal',estado:'activo',notas:'Cardiología y metabolismo',saldo:5800},{id:3,nombre:'Proveedor Alterno JAV',contacto:'Javier',tel:'(33) 1234-5678',email:'',rfc:'',credito:0,dias:0,tipo:'informal',estado:'activo',notas:'Migrar a formal – plan 6 meses',saldo:0}];
+DB.clientes=[{id:10,nombre:'Hospital San Javier',tipo:'Hospital',contacto:'Dra. Morales',tel:'(33) 3669-0200',email:'compras@sanjavier.mx',rfc:'HSJ910301CCC',credito:80000,dir:'Av. Pablo Casals 640, Guadalajara',saldo:23000},{id:11,nombre:'Dr. Eduardo Peña',tipo:'Médico',contacto:'Dr. Peña',tel:'(33) 8899-1122',email:'eduardopena@gmail.com',rfc:'PEEM780504DDD',credito:10000,dir:'Consultorios Médicos Providencia',saldo:3200},{id:12,nombre:'Farmacia del Ahorro #142',tipo:'Farmacia',contacto:'Lic. Torres',tel:'(33) 3630-5050',email:'142@fahorro.com',rfc:'FDA010101EEE',credito:20000,dir:'Av. Patria 1600, Guadalajara',saldo:0},{id:13,nombre:'IMSS UMF 53',tipo:'Público',contacto:'Lic. Reyes',tel:'(33) 3617-0000',email:'compras.53@imss.gob.mx',rfc:'IMSS360201FFF',credito:200000,dir:'Guadalajara, Jalisco',saldo:0},{id:14,nombre:'Distribuciones MedMex',tipo:'Distribuidor',contacto:'Sr. Jiménez',tel:'(33) 2266-7788',email:'ops@medmex.mx',rfc:'DMM150601GGG',credito:40000,dir:'Zapopan, Jalisco',saldo:8500}];
+DB.inventario=[{id:100,clave:'ONS-BEV-01',nombre:'Bevacizumab 400mg/16mL',lote:'BEV2024A',caducidad:'2025-08-15',temp:'fria',proveedorId:1,stock:24,minStock:5,costo:7200,notas:'Oncológico antiangiogénico',fechaEntrada:'2024-11-01'},{id:101,clave:'ONS-TRA-02',nombre:'Trastuzumab 440mg',lote:'TRA2024B',caducidad:'2025-12-30',temp:'fria',proveedorId:1,stock:8,minStock:3,costo:10500,notas:'',fechaEntrada:'2024-11-15'},{id:102,clave:'ONS-IMA-03',nombre:'Imatinib 400mg cap x30',lote:'IMA2024C',caducidad:'2026-03-20',temp:'ambiente',proveedorId:2,stock:3,minStock:5,costo:1900,notas:'Stock bajo – pedir urgente',fechaEntrada:'2024-10-20'},{id:103,clave:'CAR-ATO-04',nombre:'Atorvastatina 40mg x28',lote:'ATO2024D',caducidad:'2026-06-10',temp:'ambiente',proveedorId:2,stock:120,minStock:20,costo:145,notas:'',fechaEntrada:'2024-11-10'}];
+DB.entradas=[{id:200,fecha:'2024-11-01',clave:'ONS-BEV-01',nombre:'Bevacizumab 400mg/16mL',lote:'BEV2024A',caducidad:'2025-08-15',temp:'fria',proveedorId:1,qty:24,costo:7200,invId:100},{id:201,fecha:'2024-11-15',clave:'ONS-TRA-02',nombre:'Trastuzumab 440mg',lote:'TRA2024B',caducidad:'2025-12-30',temp:'fria',proveedorId:1,qty:10,costo:10500,invId:101},{id:202,fecha:'2024-10-20',clave:'ONS-IMA-03',nombre:'Imatinib 400mg cap x30',lote:'IMA2024C',caducidad:'2026-03-20',temp:'ambiente',proveedorId:2,qty:15,costo:1900,invId:102},{id:203,fecha:'2024-11-10',clave:'CAR-ATO-04',nombre:'Atorvastatina 40mg x28',lote:'ATO2024D',caducidad:'2026-06-10',temp:'ambiente',proveedorId:2,qty:120,costo:145,invId:103}];
+DB.salidas=[{id:300,fecha:'2024-11-20',clave:'ONS-TRA-02',nombre:'Trastuzumab 440mg',lote:'TRA2024B',clienteId:10,vendedor:'Oscar',qty:2,precio:13500,costo:10500,ref:'PED-001'},{id:301,fecha:'2024-11-22',clave:'CAR-ATO-04',nombre:'Atorvastatina 40mg x28',lote:'ATO2024D',clienteId:12,vendedor:'Daniel',qty:30,precio:210,costo:145,ref:'PED-002'},{id:302,fecha:'2024-11-25',clave:'ONS-IMA-03',nombre:'Imatinib 400mg cap x30',lote:'IMA2024C',clienteId:11,vendedor:'Cesar',qty:4,precio:2600,costo:1900,ref:'PED-003'},{id:303,fecha:'2024-11-26',clave:'ONS-BEV-01',nombre:'Bevacizumab 400mg/16mL',lote:'BEV2024A',clienteId:13,vendedor:'PROBISA',qty:5,precio:9200,costo:7200,ref:'PED-004'}];
+DB.gastos=[{id:400,fecha:'2024-11-05',concepto:'Flete express GDL–CDMX',categoria:'Flete',ref:'Estafeta',monto:1850,comprobante:'Factura',deducible:'Sí'},{id:401,fecha:'2024-11-10',concepto:'Renta bodega noviembre',categoria:'Almacén',ref:'Inmobiliaria López',monto:6500,comprobante:'Factura',deducible:'Sí'},{id:402,fecha:'2024-11-15',concepto:'Internet y telefonía',categoria:'Servicios',ref:'Telmex',monto:850,comprobante:'Factura',deducible:'Sí'}];
+})();
+// HELPERS
+const mxn=n=>'$'+Number(n).toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0});
+const pname=id=>{const p=DB.proveedores.find(x=>x.id===id);return p?p.nombre:'—';};
+const cname=id=>{const c=DB.clientes.find(x=>x.id===id);return c?c.nombre:'—';};
+const ctype=id=>{const c=DB.clientes.find(x=>x.id===id);return c?c.tipo:'—';};
+const ctypeClass=t=>({Hospital:'ct-hospital',Médico:'ct-medico',Farmacia:'ct-farmacia',Público:'ct-publico',Distribuidor:'ct-dist'}[t]||'ct-dist');
+function daysUntil(d){return Math.ceil((new Date(d+'T00:00:00')-new Date())/864e5);}
+function cadStatus(d){const x=daysUntil(d);return x<0?{label:'Caducado',cls:'badge-red',key:'caducado'}:x<=30?{label:'Cad. '+x+'d',cls:'badge-amber',key:'caducando'}:{label:'Vigente',cls:'badge-green',key:'ok'};}
+function stockStatus(i){return i.stock<=0?{label:'Sin stock',cls:'badge-red',key:'caducado'}:i.stock<=i.minStock?{label:'Stock bajo',cls:'badge-amber',key:'bajo'}:{label:'Normal',cls:'badge-green',key:'ok'};}
+const today=()=>new Date().toISOString().slice(0,10);
+// NAV
+const TITLES={dashboard:'Dashboard',inventario:'Inventario',entradas:'Entradas',salidas:'Salidas',proveedores:'Proveedores',clientes:'Clientes',gastos:'Gastos'};
+const ADDS={dashboard:'+ Nuevo',inventario:'+ Entrada',entradas:'+ Entrada',salidas:'+ Salida',proveedores:'+ Proveedor',clientes:'+ Cliente',gastos:'+ Gasto'};
+function nav(sec,el){
+  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+sec).classList.add('active');
+  document.getElementById('page-title').textContent=TITLES[sec];
+  document.getElementById('btn-add').textContent=ADDS[sec];
+  cur=sec;
+  document.getElementById('sidebar').classList.remove('open');
+  ({dashboard:renderDashboard,inventario:renderInventario,entradas:renderEntradas,salidas:renderSalidas,proveedores:renderProveedores,clientes:renderClientes,gastos:renderGastos}[sec]||renderDashboard)();
+}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('collapsed');}
+function openMobile(){const sb=document.getElementById('sidebar');sb.classList.toggle('open');sb.classList.remove('collapsed');}
+const openModal=id=>document.getElementById(id).classList.add('open');
+const closeModal=id=>document.getElementById(id).classList.remove('open');
+function openAddModal(){
+  if(cur==='inventario'||cur==='entradas'){fillProvSelect();openModal('modal-inventario');}
+  else if(cur==='salidas'){fillSalidaSelects();openModal('modal-salida');}
+  else if(cur==='proveedores')openModal('modal-proveedor');
+  else if(cur==='clientes')openModal('modal-cliente');
+  else if(cur==='gastos'){document.getElementById('fg-fecha').value=today();openModal('modal-gasto');}
+  else{fillProvSelect();openModal('modal-inventario');}
+}
+function fillProvSelect(){const s=document.getElementById('f-proveedor');s.innerHTML='<option value="">-- Seleccionar --</option>';DB.proveedores.forEach(p=>s.innerHTML+=`<option value="${p.id}">${p.nombre}</option>`);}
+function fillSalidaSelects(){
+  const sp=document.getElementById('fs-producto');sp.innerHTML='<option value="">-- Seleccionar --</option>';
+  DB.inventario.forEach(i=>{if(i.stock>0)sp.innerHTML+=`<option value="${i.id}">${i.clave} · ${i.nombre}</option>`;});
+  const sc=document.getElementById('fs-cliente');sc.innerHTML='<option value="">-- Seleccionar --</option>';
+  DB.clientes.forEach(c=>sc.innerHTML+=`<option value="${c.id}">${c.nombre}</option>`);
+  document.getElementById('fs-fecha').value=today();
+  ['fs-qty','fs-precio'].forEach(id=>document.getElementById(id).value='');
+  calcTotals();
+}
+function fillSalidaProduct(){
+  const inv=DB.inventario.find(i=>i.id==document.getElementById('fs-producto').value);
+  const sl=document.getElementById('fs-lote');sl.innerHTML='<option value="">--</option>';
+  if(inv)sl.innerHTML=`<option value="${inv.lote}">${inv.lote} · cad: ${inv.caducidad} · stock: ${inv.stock}</option>`;
+  calcTotals();
+}
+function calcTotals(){
+  const inv=DB.inventario.find(i=>i.id==document.getElementById('fs-producto').value);
+  const qty=parseFloat(document.getElementById('fs-qty').value)||0;
+  const precio=parseFloat(document.getElementById('fs-precio').value)||0;
+  const costo=(inv?inv.costo:0)*qty;const venta=precio*qty;const util=venta-costo;
+  document.getElementById('fs-costo-total').textContent=mxn(costo);
+  document.getElementById('fs-venta-total').textContent=mxn(venta);
+  const u=document.getElementById('fs-utilidad');u.textContent=mxn(util);u.style.color=util>=0?'var(--green)':'var(--red)';
+}
+// SAVES
+function saveEntrada(){
+  const clave=document.getElementById('f-clave').value.trim();
+  const nombre=document.getElementById('f-nombre').value.trim();
+  const lote=document.getElementById('f-lote').value.trim();
+  const cad=document.getElementById('f-caducidad').value;
+  const temp=document.getElementById('f-temp').value;
+  const provId=parseInt(document.getElementById('f-proveedor').value)||0;
+  const qty=parseInt(document.getElementById('f-qty').value)||0;
+  const costo=parseFloat(document.getElementById('f-costo').value)||0;
+  const minStock=parseInt(document.getElementById('f-minstock').value)||5;
+  const notas=document.getElementById('f-notas').value;
+  if(!nombre||!lote||!cad||qty<1){alert('Completa los campos obligatorios (*)');return;}
+  const t=today();
+  const ex=DB.inventario.find(i=>i.clave===clave&&i.lote===lote);
+  let invId;
+  if(ex){ex.stock+=qty;invId=ex.id;}
+  else{const inv={id:uid(),clave,nombre,lote,caducidad:cad,temp,proveedorId:provId,stock:qty,minStock,costo,notas,fechaEntrada:t};DB.inventario.push(inv);invId=inv.id;}
+  DB.entradas.push({id:uid(),fecha:t,clave,nombre,lote,caducidad:cad,temp,proveedorId:provId,qty,costo,invId});
+  closeModal('modal-inventario');
+  ['f-clave','f-nombre','f-lote','f-caducidad','f-qty','f-costo','f-minstock','f-notas'].forEach(id=>document.getElementById(id).value='');
+  nav(cur,null);renderDashboard();
+}
+function saveSalida(){
+  const invId=parseInt(document.getElementById('fs-producto').value)||0;
+  const lote=document.getElementById('fs-lote').value;
+  const clienteId=parseInt(document.getElementById('fs-cliente').value)||0;
+  const vendedor=document.getElementById('fs-vendedor').value;
+  const qty=parseInt(document.getElementById('fs-qty').value)||0;
+  const precio=parseFloat(document.getElementById('fs-precio').value)||0;
+  const fecha=document.getElementById('fs-fecha').value;
+  const ref=document.getElementById('fs-ref').value;
+  if(!invId||!clienteId||qty<1||precio<=0){alert('Completa todos los campos obligatorios (*)');return;}
+  const inv=DB.inventario.find(i=>i.id===invId);
+  if(!inv||inv.stock<qty){alert('Stock insuficiente. Disponible: '+(inv?inv.stock:0));return;}
+  inv.stock-=qty;
+  DB.salidas.push({id:uid(),fecha,clave:inv.clave,nombre:inv.nombre,lote,clienteId,vendedor,qty,precio,costo:inv.costo,ref});
+  closeModal('modal-salida');nav(cur,null);renderDashboard();
+}
+function saveProveedor(){
+  const nombre=document.getElementById('fp-nombre').value.trim();if(!nombre){alert('Ingresa el nombre');return;}
+  DB.proveedores.push({id:uid(),nombre,contacto:document.getElementById('fp-contacto').value,tel:document.getElementById('fp-tel').value,email:document.getElementById('fp-email').value,rfc:document.getElementById('fp-rfc').value,credito:parseFloat(document.getElementById('fp-credito').value)||0,dias:parseInt(document.getElementById('fp-dias').value)||0,tipo:document.getElementById('fp-tipo').value,estado:document.getElementById('fp-estado').value,notas:document.getElementById('fp-notas').value,saldo:0});
+  closeModal('modal-proveedor');['fp-nombre','fp-contacto','fp-tel','fp-email','fp-rfc','fp-credito','fp-dias','fp-notas'].forEach(id=>document.getElementById(id).value='');
+  renderProveedores();
+}
+function saveCliente(){
+  const nombre=document.getElementById('fc-nombre').value.trim();if(!nombre){alert('Ingresa el nombre');return;}
+  DB.clientes.push({id:uid(),nombre,tipo:document.getElementById('fc-tipo').value,contacto:document.getElementById('fc-contacto').value,tel:document.getElementById('fc-tel').value,email:document.getElementById('fc-email').value,rfc:document.getElementById('fc-rfc').value,credito:parseFloat(document.getElementById('fc-credito').value)||0,dir:document.getElementById('fc-dir').value,saldo:0});
+  closeModal('modal-cliente');['fc-nombre','fc-contacto','fc-tel','fc-email','fc-rfc','fc-credito','fc-dir'].forEach(id=>document.getElementById(id).value='');
+  renderClientes();
+}
+function saveGasto(){
+  const concepto=document.getElementById('fg-concepto').value.trim();
+  const monto2=parseFloat(document.getElementById('fg-monto').value)||0;
+  if(!concepto||monto2<=0){alert('Ingresa concepto y monto');return;}
+  DB.gastos.push({id:uid(),fecha:document.getElementById('fg-fecha').value,concepto,categoria:document.getElementById('fg-categoria').value,ref:document.getElementById('fg-ref').value,monto:monto2,comprobante:document.getElementById('fg-comprobante').value,deducible:document.getElementById('fg-deducible').value});
+  closeModal('modal-gasto');['fg-concepto','fg-ref','fg-monto'].forEach(id=>document.getElementById(id).value='');
+  renderGastos();renderDashboard();
+}
+function delItem(arr,id,sec){const i=arr.findIndex(x=>x.id===id);if(i>-1)arr.splice(i,1);({inventario:renderInventario,entradas:renderEntradas,salidas:renderSalidas,proveedores:renderProveedores,clientes:renderClientes,gastos:renderGastos}[sec]||renderInventario)();renderDashboard();}
+function openSalidaFromInv(invId){fillSalidaSelects();document.getElementById('fs-producto').value=invId;fillSalidaProduct();openModal('modal-salida');}
+// RENDERS
+function renderDashboard(){
+  document.getElementById('ds-skus').textContent=DB.inventario.length;
+  document.getElementById('ds-cad').textContent=DB.inventario.filter(i=>{const d=daysUntil(i.caducidad);return d>=0&&d<=30;}).length;
+  document.getElementById('ds-cli').textContent=DB.clientes.length;
+  document.getElementById('ds-prov').textContent=DB.proveedores.filter(p=>p.estado==='activo').length;
+  const totalVenta=DB.salidas.reduce((a,s)=>a+s.qty*s.precio,0);
+  const totalCMV=DB.salidas.reduce((a,s)=>a+s.qty*s.costo,0);
+  const totalGas=DB.gastos.reduce((a,g)=>a+g.monto,0);
+  document.getElementById('ds-venta').textContent=mxn(totalVenta);
+  document.getElementById('ds-venta-sub').textContent=DB.salidas.length+' movimientos';
+  document.getElementById('ds-costo').textContent=mxn(totalCMV+totalGas);
+  const ac=DB.inventario.filter(i=>{const s=stockStatus(i);const c=cadStatus(i.caducidad);return s.key!=='ok'||c.key!=='ok';}).length;
+  const b=document.getElementById('badge-inv');b.textContent=ac;b.style.display=ac?'':'none';
+  // VENDEDORES
+  const vd=VENDEDORES.map(v=>{const r=DB.salidas.filter(s=>s.vendedor===v);const t=r.reduce((a,s)=>a+s.qty*s.precio,0);return{v,t,pzas:r.reduce((a,s)=>a+s.qty,0),ops:r.length};});
+  const mx=Math.max(...vd.map(x=>x.t),1);
+  const vp=document.getElementById('vnd-panel');
+  vp.innerHTML=!DB.salidas.length?'<div style="color:var(--text3);font-size:13px;text-align:center;padding:12px">Sin ventas aún</div>':vd.map(d=>`<div class="vnd-row"><div class="vnd-name">${d.v}</div><div class="vnd-bar-wrap"><div class="vnd-bar-fill" style="width:${Math.round(d.t/mx*100)}%;background:${VND_C[d.v]}"></div></div><div class="vnd-amt">${mxn(d.t)}</div></div><div style="margin:-4px 0 8px 78px;font-size:11px;color:var(--text3)">${d.ops} op · ${d.pzas} pzas</div>`).join('');
+  document.getElementById('vnd-total').textContent=mxn(totalVenta);
+  // UTILIDADES
+  const neta=totalVenta-totalCMV-totalGas;
+  const margen=totalVenta>0?Math.round(neta/totalVenta*100):0;
+  document.getElementById('ut-ingresos').textContent=mxn(totalVenta);
+  document.getElementById('ut-cmv').textContent=mxn(totalCMV);
+  document.getElementById('ut-gastos').textContent=mxn(totalGas);
+  const ne=document.getElementById('ut-neta');ne.textContent=mxn(neta);ne.style.color=neta>=0?'var(--green)':'var(--red)';
+  const me=document.getElementById('ut-margen');me.textContent=margen+'% margen';me.style.color=margen>=20?'var(--green)':margen>=10?'var(--amber)':'var(--red)';
+  // ALERTAS
+  const al=DB.inventario.filter(i=>{const s=stockStatus(i);const c=cadStatus(i.caducidad);return s.key!=='ok'||c.key!=='ok';});
+  document.getElementById('alerts-panel').innerHTML=!al.length?'<div style="color:var(--text3);font-size:13px;text-align:center;padding:16px">Sin alertas activas ✓</div>':al.map(i=>{const cs=cadStatus(i.caducidad);const ss=stockStatus(i);const cl=(cs.key==='caducado'||ss.key==='caducado')?'alert-red':'alert-amber';return`<div class="alert-strip ${cl}">⚠ <strong>${i.nombre}</strong>${ss.key!=='ok'?' · '+ss.label+' ('+i.stock+' pzas)':''}${cs.key!=='ok'?' · '+cs.label:''}</div>`;}).join('');
+  // ACTIVIDAD
+  const acts=[...DB.entradas.map(e=>({d:e.fecha,t:'Entrada: '+e.nombre,s:'+'+e.qty+' pzas · Lote '+e.lote,c:'var(--green)'})),...DB.salidas.map(s=>({d:s.fecha,t:'Salida: '+s.nombre,s:s.qty+' pzas · '+cname(s.clienteId)+' · '+s.vendedor,c:'var(--accent)'})),...DB.gastos.map(g=>({d:g.fecha,t:'Gasto: '+g.concepto,s:mxn(g.monto)+' · '+g.categoria,c:'var(--amber)'}))].sort((a,b)=>b.d.localeCompare(a.d)).slice(0,8);
+  document.getElementById('recent-activity').innerHTML=!acts.length?'<div style="color:var(--text3);font-size:13px;text-align:center;padding:24px">Sin movimientos aún</div>':acts.map(a=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)"><div style="width:8px;height:8px;border-radius:50%;background:${a.c};margin-top:5px;flex-shrink:0"></div><div><div style="font-size:13px">${a.t}</div><div style="font-size:11px;color:var(--text3)">${a.s} · ${a.d}</div></div></div>`).join('');
+}
+function renderInventario(){
+  const q=(document.getElementById('inv-search').value||'').toLowerCase();
+  const ft=document.getElementById('inv-filter-temp').value;
+  const fs=document.getElementById('inv-filter-status').value;
+  const rows=DB.inventario.filter(i=>{
+    if(q&&!i.nombre.toLowerCase().includes(q)&&!i.clave.toLowerCase().includes(q)&&!i.lote.toLowerCase().includes(q))return false;
+    if(ft&&i.temp!==ft)return false;
+    if(fs){const s=stockStatus(i);const c=cadStatus(i.caducidad);if(fs==='ok'&&(s.key!=='ok'||c.key!=='ok'))return false;if(fs==='bajo'&&s.key!=='bajo')return false;if(fs==='caducando'&&c.key!=='caducando')return false;if(fs==='caducado'&&c.key!=='caducado')return false;}
+    return true;
+  });
+  const tb=document.getElementById('inv-tbody');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:24px">Sin productos.</td></tr>';return;}
+  tb.innerHTML=rows.map(i=>{
+    const cs=cadStatus(i.caducidad);const ss=stockStatus(i);
+    const pct=Math.min(100,Math.round(i.stock/Math.max(i.minStock*3,1)*100));
+    const bc=ss.key==='bajo'?'var(--amber)':ss.key==='caducado'?'var(--red)':'var(--green)';
+    return`<tr><td><span class="mono">${i.clave}</span></td><td><div style="font-weight:500">${i.nombre}</div><div style="font-size:11px;color:var(--text3)">${i.notas||''}</div></td><td><span class="mono">${i.lote}</span></td><td style="font-size:12px">${i.caducidad}</td><td><span class="temp-chip ${i.temp==='fria'?'temp-cold':'temp-ambient'}">${i.temp==='fria'?'❄ 2–8°C':'🌡 Amb.'}</span></td><td style="font-size:12px">${pname(i.proveedorId)}</td><td style="font-family:var(--mono);color:var(--amber)">${mxn(i.costo)}</td><td><div style="display:flex;align-items:center;gap:8px"><span style="font-weight:600;font-family:var(--mono)">${i.stock}</span><div style="width:50px"><div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${bc}"></div></div></div></div></td><td><span class="badge ${cs.cls}" style="margin-bottom:3px">${cs.label}</span><br><span class="badge ${ss.cls}">${ss.label}</span></td><td><button class="btn btn-ghost btn-sm" onclick="openSalidaFromInv(${i.id})">Salida</button> <button class="btn btn-danger btn-sm" onclick="if(confirm('¿Eliminar?'))delItem(DB.inventario,${i.id},'inventario')">✕</button></td></tr>`;
+  }).join('');
+}
+function renderEntradas(){
+  const q=(document.getElementById('ent-search').value||'').toLowerCase();
+  const rows=DB.entradas.filter(e=>!q||e.nombre.toLowerCase().includes(q)||e.clave.toLowerCase().includes(q)||e.lote.toLowerCase().includes(q));
+  const tb=document.getElementById('ent-tbody');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:24px">Sin entradas.</td></tr>';return;}
+  tb.innerHTML=rows.map(e=>`<tr><td>${e.fecha}</td><td><span class="mono">${e.clave}</span></td><td>${e.nombre}</td><td><span class="mono">${e.lote}</span></td><td style="font-size:12px">${e.caducidad}</td><td><span class="temp-chip ${e.temp==='fria'?'temp-cold':'temp-ambient'}">${e.temp==='fria'?'❄':'🌡'}</span></td><td style="font-size:12px">${pname(e.proveedorId)}</td><td style="font-weight:600;font-family:var(--mono)">${e.qty} pzas</td><td style="color:var(--amber);font-family:var(--mono)">${mxn(e.costo)}</td><td style="font-weight:600;color:var(--red);font-family:var(--mono)">${mxn(e.qty*e.costo)}</td></tr>`).join('');
+}
+function renderSalidas(){
+  const q=(document.getElementById('sal-search').value||'').toLowerCase();
+  const fv=document.getElementById('sal-filter-vnd').value;
+  const rows=DB.salidas.filter(s=>{if(fv&&s.vendedor!==fv)return false;return !q||s.nombre.toLowerCase().includes(q)||s.clave.toLowerCase().includes(q)||(cname(s.clienteId)||'').toLowerCase().includes(q);});
+  const tb=document.getElementById('sal-tbody');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="11" style="text-align:center;color:var(--text3);padding:24px">Sin salidas.</td></tr>';return;}
+  tb.innerHTML=rows.map(s=>{const ct=ctype(s.clienteId);const util=s.qty*(s.precio-s.costo);return`<tr><td>${s.fecha}</td><td><span class="mono">${s.clave}</span></td><td>${s.nombre}</td><td><span class="mono">${s.lote}</span></td><td>${cname(s.clienteId)}</td><td><span class="client-type ${ctypeClass(ct)}">${ct}</span></td><td><span class="badge ${VND_B[s.vendedor]||'badge-blue'}">${s.vendedor}</span></td><td style="font-weight:600;font-family:var(--mono)">${s.qty} pzas</td><td style="font-family:var(--mono)">${mxn(s.precio)}</td><td style="font-weight:600;color:var(--green);font-family:var(--mono)">${mxn(s.qty*s.precio)}</td><td style="font-weight:600;font-family:var(--mono);color:${util>=0?'var(--teal)':'var(--red)'}">${mxn(util)}</td></tr>`;}).join('');
+}
+function renderProveedores(){
+  const q=(document.getElementById('prov-search').value||'').toLowerCase();
+  const rows=DB.proveedores.filter(p=>!q||p.nombre.toLowerCase().includes(q)||p.contacto.toLowerCase().includes(q));
+  const tb=document.getElementById('prov-tbody');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:24px">Sin proveedores.</td></tr>';return;}
+  tb.innerHTML=rows.map(p=>`<tr><td><div style="font-weight:500">${p.nombre}</div><span class="badge ${p.tipo==='formal'?'badge-green':'badge-amber'}" style="margin-top:3px">${p.tipo==='formal'?'Formal':'Alterno'}</span></td><td>${p.contacto||'—'}</td><td>${p.tel||'—'}</td><td style="font-size:12px">${p.email||'—'}</td><td>${mxn(p.credito)}</td><td>${p.dias} días</td><td style="color:var(--amber);font-weight:600">${mxn(p.saldo)}</td><td><span class="badge ${p.estado==='activo'?'badge-blue':'badge-red'}">${p.estado}</span></td><td><button class="btn btn-danger btn-sm" onclick="if(confirm('¿Eliminar?'))delItem(DB.proveedores,${p.id},'proveedores')">✕</button></td></tr>`).join('');
+}
+function renderClientes(){
+  const q=(document.getElementById('cli-search').value||'').toLowerCase();
+  const ft=document.getElementById('cli-filter-tipo').value;
+  const rows=DB.clientes.filter(c=>{if(ft&&c.tipo!==ft)return false;return !q||c.nombre.toLowerCase().includes(q)||c.contacto.toLowerCase().includes(q);});
+  const tb=document.getElementById('cli-tbody');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:24px">Sin clientes.</td></tr>';return;}
+  tb.innerHTML=rows.map(c=>`<tr><td><div style="font-weight:500">${c.nombre}</div><div style="font-size:11px;color:var(--text3)">${c.dir||''}</div></td><td><span class="client-type ${ctypeClass(c.tipo)}">${c.tipo}</span></td><td>${c.contacto||'—'}</td><td>${c.tel||'—'}</td><td><span class="mono" style="font-size:11px">${c.rfc||'—'}</span></td><td>${mxn(c.credito)}</td><td style="color:${c.saldo>0?'var(--amber)':'var(--text3)'};font-weight:600">${mxn(c.saldo)}</td><td><span class="badge badge-green">Activo</span></td><td><button class="btn btn-danger btn-sm" onclick="if(confirm('¿Eliminar?'))delItem(DB.clientes,${c.id},'clientes')">✕</button></td></tr>`).join('');
+}
+function renderGastos(){
+  const rows=DB.gastos;const tb=document.getElementById('gas-tbody');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:24px">Sin gastos.</td></tr>';return;}
+  const catB={Flete:'badge-amber',Almacén:'badge-purple',Personal:'badge-blue',Servicios:'badge-green',Otros:''};
+  tb.innerHTML=rows.map(g=>`<tr><td>${g.fecha}</td><td style="font-weight:500">${g.concepto}</td><td><span class="badge ${catB[g.categoria]||''}">${g.categoria}</span></td><td style="font-size:12px">${g.ref||'—'}</td><td style="font-weight:600;color:var(--amber);font-family:var(--mono)">${mxn(g.monto)}</td><td><span class="badge ${g.comprobante==='Factura'?'badge-green':g.comprobante==='Ticket'?'badge-blue':'badge-red'}">${g.comprobante}</span></td><td><span class="badge ${g.deducible==='Sí'?'badge-teal':'badge-red'}">${g.deducible}</span></td><td><button class="btn btn-danger btn-sm" onclick="if(confirm('¿Eliminar?'))delItem(DB.gastos,${g.id},'gastos')">✕</button></td></tr>`).join('');
+  ['Flete','Almacén','Personal','Servicios','Otros'].forEach(cat=>{
+    const tot=rows.filter(g=>g.categoria===cat).reduce((a,g)=>a+g.monto,0);
+    const key='g-'+cat.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const el=document.getElementById(key);if(el)el.textContent=mxn(tot);
+  });
+  document.getElementById('g-total').textContent=mxn(rows.reduce((a,g)=>a+g.monto,0));
+}
+function exportCSV(){
+  const maps={inventario:{data:DB.inventario,cols:['clave','nombre','lote','caducidad','temp','stock','costo']},entradas:{data:DB.entradas,cols:['fecha','clave','nombre','lote','qty','costo']},salidas:{data:DB.salidas,cols:['fecha','clave','nombre','lote','vendedor','qty','precio','costo','ref']},proveedores:{data:DB.proveedores,cols:['nombre','contacto','tel','email','rfc','tipo','estado']},clientes:{data:DB.clientes,cols:['nombre','tipo','contacto','tel','email','rfc']},gastos:{data:DB.gastos,cols:['fecha','concepto','categoria','ref','monto','comprobante','deducible']}};
+  const m=maps[cur];if(!m)return;
+  const csv=[m.cols.join(','),...m.data.map(r=>m.cols.map(c=>`"${r[c]||''}"`).join(','))].join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download=cur+'_'+today()+'.csv';a.click();
+}
+// INIT
+document.getElementById('today-date').textContent=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
+renderDashboard();
+</script>
+</body>
+</html>
