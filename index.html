@@ -324,11 +324,13 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);}select optio
 </div>
 
 <script>
-const DB=// CONFIGURACIÓN DE SUPABASE - Reemplaza con tus credenciales reales de Supabase
+<script>
+// CONFIGURACIÓN DE SUPABASE
 const SUPABASE_URL = "https://ihwjftfogcctztxojoru.supabase.co/rest/v1/"; 
 const SUPABASE_KEY = "sb_publishable_reW2SqGGIQntg9HeOwLyEg_fFhHPtsy";
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Inicialización correcta usando el objeto global del CDN
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Base de datos local en memoria que se sincronizará con la nube
 let DB = {inventario:[], entradas:[], salidas:[], proveedores:[], clientes:[], gastos:[]};
@@ -356,7 +358,9 @@ async function cargarDatosDeNube() {
       // Ajustar el contador de IDs para evitar duplicados
       let maxId = 1000;
       Object.keys(DB).forEach(key => {
-        DB[key].forEach(item => { if(item.id && item.id > maxId) maxId = item.id; });
+        if(Array.isArray(DB[key])) {
+          DB[key].forEach(item => { if(item.id && item.id > maxId) maxId = item.id; });
+        }
       });
       _id = maxId;
     }
