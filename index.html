@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -323,247 +324,332 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);}select optio
 </div>
 
 <script>
-const DB={inventario:[],entradas:[],salidas:[],proveedores:[],clientes:[],gastos:[]};
-let cur='dashboard';let _id=1000;const uid=()=>++_id;
-const VENDEDORES=['Daniel','Oscar','Cesar','PROBISA'];
-const VND_C={Daniel:'var(--accent)',Oscar:'var(--green)',Cesar:'var(--purple)',PROBISA:'var(--amber)'};
-const VND_B={Daniel:'badge-blue',Oscar:'badge-green',Cesar:'badge-purple',PROBISA:'badge-amber'};
-// SEED
-(function(){
-DB.proveedores=[{id:1,nombre:'Laboratorios PISA',contacto:'Mtra. García',tel:'(33) 3678-0000',email:'ventas@pisa.com.mx',rfc:'LPI830101AAA',credito:50000,dias:30,tipo:'formal',estado:'activo',notas:'Oncológicos y biológicos',saldo:12400},{id:2,nombre:'Chinoin S.A.',contacto:'Ing. Ramos',tel:'(55) 5728-0000',email:'dist@chinoin.com',rfc:'CHI750202BBB',credito:30000,dias:45,tipo:'formal',estado:'activo',notas:'Cardiología y metabolismo',saldo:5800},{id:3,nombre:'Proveedor Alterno JAV',contacto:'Javier',tel:'(33) 1234-5678',email:'',rfc:'',credito:0,dias:0,tipo:'informal',estado:'activo',notas:'Migrar a formal – plan 6 meses',saldo:0}];
-DB.clientes=[{id:10,nombre:'Hospital San Javier',tipo:'Hospital',contacto:'Dra. Morales',tel:'(33) 3669-0200',email:'compras@sanjavier.mx',rfc:'HSJ910301CCC',credito:80000,dir:'Av. Pablo Casals 640, Guadalajara',saldo:23000},{id:11,nombre:'Dr. Eduardo Peña',tipo:'Médico',contacto:'Dr. Peña',tel:'(33) 8899-1122',email:'eduardopena@gmail.com',rfc:'PEEM780504DDD',credito:10000,dir:'Consultorios Médicos Providencia',saldo:3200},{id:12,nombre:'Farmacia del Ahorro #142',tipo:'Farmacia',contacto:'Lic. Torres',tel:'(33) 3630-5050',email:'142@fahorro.com',rfc:'FDA010101EEE',credito:20000,dir:'Av. Patria 1600, Guadalajara',saldo:0},{id:13,nombre:'IMSS UMF 53',tipo:'Público',contacto:'Lic. Reyes',tel:'(33) 3617-0000',email:'compras.53@imss.gob.mx',rfc:'IMSS360201FFF',credito:200000,dir:'Guadalajara, Jalisco',saldo:0},{id:14,nombre:'Distribuciones MedMex',tipo:'Distribuidor',contacto:'Sr. Jiménez',tel:'(33) 2266-7788',email:'ops@medmex.mx',rfc:'DMM150601GGG',credito:40000,dir:'Zapopan, Jalisco',saldo:8500}];
-DB.inventario=[{id:100,clave:'ONS-BEV-01',nombre:'Bevacizumab 400mg/16mL',lote:'BEV2024A',caducidad:'2025-08-15',temp:'fria',proveedorId:1,stock:24,minStock:5,costo:7200,notas:'Oncológico antiangiogénico',fechaEntrada:'2024-11-01'},{id:101,clave:'ONS-TRA-02',nombre:'Trastuzumab 440mg',lote:'TRA2024B',caducidad:'2025-12-30',temp:'fria',proveedorId:1,stock:8,minStock:3,costo:10500,notas:'',fechaEntrada:'2024-11-15'},{id:102,clave:'ONS-IMA-03',nombre:'Imatinib 400mg cap x30',lote:'IMA2024C',caducidad:'2026-03-20',temp:'ambiente',proveedorId:2,stock:3,minStock:5,costo:1900,notas:'Stock bajo – pedir urgente',fechaEntrada:'2024-10-20'},{id:103,clave:'CAR-ATO-04',nombre:'Atorvastatina 40mg x28',lote:'ATO2024D',caducidad:'2026-06-10',temp:'ambiente',proveedorId:2,stock:120,minStock:20,costo:145,notas:'',fechaEntrada:'2024-11-10'}];
-DB.entradas=[{id:200,fecha:'2024-11-01',clave:'ONS-BEV-01',nombre:'Bevacizumab 400mg/16mL',lote:'BEV2024A',caducidad:'2025-08-15',temp:'fria',proveedorId:1,qty:24,costo:7200,invId:100},{id:201,fecha:'2024-11-15',clave:'ONS-TRA-02',nombre:'Trastuzumab 440mg',lote:'TRA2024B',caducidad:'2025-12-30',temp:'fria',proveedorId:1,qty:10,costo:10500,invId:101},{id:202,fecha:'2024-10-20',clave:'ONS-IMA-03',nombre:'Imatinib 400mg cap x30',lote:'IMA2024C',caducidad:'2026-03-20',temp:'ambiente',proveedorId:2,qty:15,costo:1900,invId:102},{id:203,fecha:'2024-11-10',clave:'CAR-ATO-04',nombre:'Atorvastatina 40mg x28',lote:'ATO2024D',caducidad:'2026-06-10',temp:'ambiente',proveedorId:2,qty:120,costo:145,invId:103}];
-DB.salidas=[{id:300,fecha:'2024-11-20',clave:'ONS-TRA-02',nombre:'Trastuzumab 440mg',lote:'TRA2024B',clienteId:10,vendedor:'Oscar',qty:2,precio:13500,costo:10500,ref:'PED-001'},{id:301,fecha:'2024-11-22',clave:'CAR-ATO-04',nombre:'Atorvastatina 40mg x28',lote:'ATO2024D',clienteId:12,vendedor:'Daniel',qty:30,precio:210,costo:145,ref:'PED-002'},{id:302,fecha:'2024-11-25',clave:'ONS-IMA-03',nombre:'Imatinib 400mg cap x30',lote:'IMA2024C',clienteId:11,vendedor:'Cesar',qty:4,precio:2600,costo:1900,ref:'PED-003'},{id:303,fecha:'2024-11-26',clave:'ONS-BEV-01',nombre:'Bevacizumab 400mg/16mL',lote:'BEV2024A',clienteId:13,vendedor:'PROBISA',qty:5,precio:9200,costo:7200,ref:'PED-004'}];
-DB.gastos=[{id:400,fecha:'2024-11-05',concepto:'Flete express GDL–CDMX',categoria:'Flete',ref:'Estafeta',monto:1850,comprobante:'Factura',deducible:'Sí'},{id:401,fecha:'2024-11-10',concepto:'Renta bodega noviembre',categoria:'Almacén',ref:'Inmobiliaria López',monto:6500,comprobante:'Factura',deducible:'Sí'},{id:402,fecha:'2024-11-15',concepto:'Internet y telefonía',categoria:'Servicios',ref:'Telmex',monto:850,comprobante:'Factura',deducible:'Sí'}];
-})();
+const DB=// CONFIGURACIÓN DE SUPABASE - Reemplaza con tus credenciales reales de Supabase
+const SUPABASE_URL = "https://TU_PROYECTO_ID.supabase.co"; 
+const SUPABASE_KEY = "TU_ANON_PUBLIC_KEY";
+
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Base de datos local en memoria que se sincronizará con la nube
+let DB = {inventario:[], entradas:[], salidas:[], proveedores:[], clientes:[], gastos:[]};
+let cur = 'dashboard';
+let _id = 1000;
+const uid = () => ++_id;
+
+const VENDEDORES = ['Daniel','Oscar','Cesar','PROBISA'];
+const VND_C = {Daniel:'var(--accent)', Oscar:'var(--green)', Cesar:'var(--purple)', PROBISA:'var(--amber)'};
+const VND_B = {Daniel:'badge-blue', Oscar:'badge-green', Cesar:'badge-purple', PROBISA:'badge-amber'};
+
+// FUNCIONES DE SINCRONIZACIÓN CON LA NUBE
+async function cargarDatosDeNube() {
+  try {
+    const { data, error } = await supabase
+      .from('medtrack_store')
+      .select('datos')
+      .eq('clave_sistema', 'sistema_principal')
+      .single();
+
+    if (error) throw error;
+    
+    if (data && data.datos) {
+      DB = data.datos;
+      // Ajustar el contador de IDs para evitar duplicados
+      let maxId = 1000;
+      Object.keys(DB).forEach(key => {
+        DB[key].forEach(item => { if(item.id && item.id > maxId) maxId = item.id; });
+      });
+      _id = maxId;
+    }
+    // Refrescar la vista actual una vez descargados los datos
+    nav(cur, null);
+  } catch (err) {
+    console.error("Error al descargar datos de Supabase:", err);
+    alert("No se pudieron descargar los datos más recientes de la nube. Revisa tu conexión.");
+  }
+}
+
+async function guardarDatosEnNube() {
+  try {
+    const { error } = await supabase
+      .from('medtrack_store')
+      .update({ datos: DB, updated_at: new Date() })
+      .eq('clave_sistema', 'sistema_principal');
+
+    if (error) throw error;
+    console.log("Sincronización exitosa con la nube.");
+  } catch (err) {
+    console.error("Error al guardar en Supabase:", err);
+    alert("¡Atención! Los cambios se hicieron en pantalla pero no se pudieron respaldar en la nube. Verifica tu conexión a internet.");
+  }
+}
+
 // HELPERS
-const mxn=n=>'$'+Number(n).toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0});
-const pname=id=>{const p=DB.proveedores.find(x=>x.id===id);return p?p.nombre:'—';};
-const cname=id=>{const c=DB.clientes.find(x=>x.id===id);return c?c.nombre:'—';};
-const ctype=id=>{const c=DB.clientes.find(x=>x.id===id);return c?c.tipo:'—';};
-const ctypeClass=t=>({Hospital:'ct-hospital',Médico:'ct-medico',Farmacia:'ct-farmacia',Público:'ct-publico',Distribuidor:'ct-dist'}[t]||'ct-dist');
-function daysUntil(d){return Math.ceil((new Date(d+'T00:00:00')-new Date())/864e5);}
-function cadStatus(d){const x=daysUntil(d);return x<0?{label:'Caducado',cls:'badge-red',key:'caducado'}:x<=30?{label:'Cad. '+x+'d',cls:'badge-amber',key:'caducando'}:{label:'Vigente',cls:'badge-green',key:'ok'};}
-function stockStatus(i){return i.stock<=0?{label:'Sin stock',cls:'badge-red',key:'caducado'}:i.stock<=i.minStock?{label:'Stock bajo',cls:'badge-amber',key:'bajo'}:{label:'Normal',cls:'badge-green',key:'ok'};}
-const today=()=>new Date().toISOString().slice(0,10);
+const mxn = n => '$' + Number(n).toLocaleString('es-MX', {minimumFractionDigits:0, maximumFractionDigits:0});
+const pname = id => { const p = DB.proveedores.find(x => x.id === id); return p ? p.nombre : '—'; };
+const cname = id => { const c = DB.clientes.find(x => x.id === id); return c ? c.nombre : '—'; };
+const ctype = id => { const c = DB.clientes.find(x => x.id === id); return c ? c.tipo : '—'; };
+const ctypeClass = t => ({Hospital:'ct-hospital', Médico:'ct-medico', Farmacia:'ct-farmacia', Público:'ct-publico', Distribuidor:'ct-dist'}[t] || 'ct-dist');
+function daysUntil(d) { return Math.ceil((new Date(d+'T00:00:00') - new Date()) / 864e5); }
+function cadStatus(d) { const x = daysUntil(d); return x < 0 ? {label:'Caducado', cls:'badge-red', key:'caducado'} : x <= 30 ? {label:'Cad. '+x+'d', cls:'badge-amber', key:'caducando'} : {label:'Vigente', cls:'badge-green', key:'ok'}; }
+function stockStatus(i) { return i.stock <= 0 ? {label:'Sin stock', cls:'badge-red', key:'caducado'} : i.stock <= i.minStock ? {label:'Stock bajo', cls:'badge-amber', key:'bajo'} : {label:'Normal', cls:'badge-green', key:'ok'}; }
+const today = () => new Date().toISOString().slice(0,10);
+
 // NAV
-const TITLES={dashboard:'Dashboard',inventario:'Inventario',entradas:'Entradas',salidas:'Salidas',proveedores:'Proveedores',clientes:'Clientes',gastos:'Gastos'};
-const ADDS={dashboard:'+ Nuevo',inventario:'+ Entrada',entradas:'+ Entrada',salidas:'+ Salida',proveedores:'+ Proveedor',clientes:'+ Cliente',gastos:'+ Gasto'};
-function nav(sec,el){
-  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
-  if(el)el.classList.add('active');
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+const TITLES = {dashboard:'Dashboard', inventario:'Inventario', entradas:'Entradas', salidas:'Salidas', proveedores:'Proveedores', clientes:'Clientes', gastos:'Gastos'};
+const ADDS = {dashboard:'+ Nuevo', inventario:'+ Entrada', entradas:'+ Entrada', salidas:'+ Salida', proveedores:'+ Proveedor', clientes:'+ Cliente', gastos:'+ Gasto'};
+
+function nav(sec, el) {
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-'+sec).classList.add('active');
-  document.getElementById('page-title').textContent=TITLES[sec];
-  document.getElementById('btn-add').textContent=ADDS[sec];
-  cur=sec;
+  document.getElementById('page-title').textContent = TITLES[sec];
+  document.getElementById('btn-add').textContent = ADDS[sec];
+  cur = sec;
   document.getElementById('sidebar').classList.remove('open');
-  ({dashboard:renderDashboard,inventario:renderInventario,entradas:renderEntradas,salidas:renderSalidas,proveedores:renderProveedores,clientes:renderClientes,gastos:renderGastos}[sec]||renderDashboard)();
+  ({dashboard:renderDashboard, inventario:renderInventario, entradas:renderEntradas, salidas:renderSalidas, proveedores:renderProveedores, clientes:renderClientes, gastos:renderGastos}[sec] || renderDashboard)();
 }
-function toggleSidebar(){document.getElementById('sidebar').classList.toggle('collapsed');}
-function openMobile(){const sb=document.getElementById('sidebar');sb.classList.toggle('open');sb.classList.remove('collapsed');}
-const openModal=id=>document.getElementById(id).classList.add('open');
-const closeModal=id=>document.getElementById(id).classList.remove('open');
-function openAddModal(){
-  if(cur==='inventario'||cur==='entradas'){fillProvSelect();openModal('modal-inventario');}
-  else if(cur==='salidas'){fillSalidaSelects();openModal('modal-salida');}
-  else if(cur==='proveedores')openModal('modal-proveedor');
-  else if(cur==='clientes')openModal('modal-cliente');
-  else if(cur==='gastos'){document.getElementById('fg-fecha').value=today();openModal('modal-gasto');}
-  else{fillProvSelect();openModal('modal-inventario');}
+
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+function openMobile() { const sb = document.getElementById('sidebar'); sb.classList.toggle('open'); sb.classList.remove('collapsed'); }
+const openModal = id => document.getElementById(id).classList.add('open');
+const closeModal = id => document.getElementById(id).classList.remove('open');
+
+function openAddModal() {
+  if(cur==='inventario' || cur==='entradas') { fillProvSelect(); openModal('modal-inventario'); }
+  else if(cur==='salidas') { fillSalidaSelects(); openModal('modal-salida'); }
+  else if(cur==='proveedores') openModal('modal-proveedor');
+  else if(cur==='clientes') openModal('modal-cliente');
+  else if(cur==='gastos') { document.getElementById('fg-fecha').value = today(); openModal('modal-gasto'); }
+  else { fillProvSelect(); openModal('modal-inventario'); }
 }
-function fillProvSelect(){const s=document.getElementById('f-proveedor');s.innerHTML='<option value="">-- Seleccionar --</option>';DB.proveedores.forEach(p=>s.innerHTML+=`<option value="${p.id}">${p.nombre}</option>`);}
-function fillSalidaSelects(){
-  const sp=document.getElementById('fs-producto');sp.innerHTML='<option value="">-- Seleccionar --</option>';
-  DB.inventario.forEach(i=>{if(i.stock>0)sp.innerHTML+=`<option value="${i.id}">${i.clave} · ${i.nombre}</option>`;});
-  const sc=document.getElementById('fs-cliente');sc.innerHTML='<option value="">-- Seleccionar --</option>';
-  DB.clientes.forEach(c=>sc.innerHTML+=`<option value="${c.id}">${c.nombre}</option>`);
-  document.getElementById('fs-fecha').value=today();
-  ['fs-qty','fs-precio'].forEach(id=>document.getElementById(id).value='');
+
+function fillProvSelect() { const s = document.getElementById('f-proveedor'); s.innerHTML = '<option value="">-- Seleccionar --</option>'; DB.proveedores.forEach(p => s.innerHTML += `<option value="${p.id}">${p.nombre}</option>`); }
+function fillSalidaSelects() {
+  const sp = document.getElementById('fs-producto'); sp.innerHTML = '<option value="">-- Seleccionar --</option>';
+  DB.inventario.forEach(i => { if(i.stock > 0) sp.innerHTML += `<option value="${i.id}">${i.clave} · ${i.nombre}</option>`; });
+  const sc = document.getElementById('fs-cliente'); sc.innerHTML = '<option value="">-- Seleccionar --</option>';
+  DB.clientes.forEach(c => sc.innerHTML += `<option value="${c.id}">${c.nombre}</option>`);
+  document.getElementById('fs-fecha').value = today();
+  ['fs-qty','fs-precio'].forEach(id => document.getElementById(id).value = '');
   calcTotals();
 }
-function fillSalidaProduct(){
-  const inv=DB.inventario.find(i=>i.id==document.getElementById('fs-producto').value);
-  const sl=document.getElementById('fs-lote');sl.innerHTML='<option value="">--</option>';
-  if(inv)sl.innerHTML=`<option value="${inv.lote}">${inv.lote} · cad: ${inv.caducidad} · stock: ${inv.stock}</option>`;
+
+function fillSalidaProduct() {
+  const inv = DB.inventario.find(i => i.id == document.getElementById('fs-producto').value);
+  const sl = document.getElementById('fs-lote'); sl.innerHTML = '<option value="">--</option>';
+  if(inv) sl.innerHTML = `<option value="${inv.lote}">${inv.lote} · cad: ${inv.caducidad} · stock: ${inv.stock}</option>`;
   calcTotals();
 }
-function calcTotals(){
-  const inv=DB.inventario.find(i=>i.id==document.getElementById('fs-producto').value);
-  const qty=parseFloat(document.getElementById('fs-qty').value)||0;
-  const precio=parseFloat(document.getElementById('fs-precio').value)||0;
-  const costo=(inv?inv.costo:0)*qty;const venta=precio*qty;const util=venta-costo;
-  document.getElementById('fs-costo-total').textContent=mxn(costo);
-  document.getElementById('fs-venta-total').textContent=mxn(venta);
-  const u=document.getElementById('fs-utilidad');u.textContent=mxn(util);u.style.color=util>=0?'var(--green)':'var(--red)';
+
+function calcTotals() {
+  const inv = DB.inventario.find(i => i.id == document.getElementById('fs-producto').value);
+  const qty = parseFloat(document.getElementById('fs-qty').value) || 0;
+  const precio = parseFloat(document.getElementById('fs-precio').value) || 0;
+  const costo = (inv ? inv.costo : 0) * qty; const venta = precio * qty; const util = venta - costo;
+  document.getElementById('fs-costo-total').textContent = mxn(costo);
+  document.getElementById('fs-venta-total').textContent = mxn(venta);
+  const u = document.getElementById('fs-utilidad'); u.textContent = mxn(util); u.style.color = util >= 0 ? 'var(--green)' : 'var(--red)';
 }
-// SAVES
-function saveEntrada(){
-  const clave=document.getElementById('f-clave').value.trim();
-  const nombre=document.getElementById('f-nombre').value.trim();
-  const lote=document.getElementById('f-lote').value.trim();
-  const cad=document.getElementById('f-caducidad').value;
-  const temp=document.getElementById('f-temp').value;
-  const provId=parseInt(document.getElementById('f-proveedor').value)||0;
-  const qty=parseInt(document.getElementById('f-qty').value)||0;
-  const costo=parseFloat(document.getElementById('f-costo').value)||0;
-  const minStock=parseInt(document.getElementById('f-minstock').value)||5;
-  const notas=document.getElementById('f-notas').value;
-  if(!nombre||!lote||!cad||qty<1){alert('Completa los campos obligatorios (*)');return;}
-  const t=today();
-  const ex=DB.inventario.find(i=>i.clave===clave&&i.lote===lote);
+
+// ACCIONES DE GUARDADO CON RESPALDO INMEDIATO A LA NUBE
+async function saveEntrada() {
+  const clave = document.getElementById('f-clave').value.trim();
+  const nombre = document.getElementById('f-nombre').value.trim();
+  const lote = document.getElementById('f-lote').value.trim();
+  const cad = document.getElementById('f-caducidad').value;
+  const temp = document.getElementById('f-temp').value;
+  const provId = parseInt(document.getElementById('f-proveedor').value) || 0;
+  const qty = parseInt(document.getElementById('f-qty').value) || 0;
+  const costo = parseFloat(document.getElementById('f-costo').value) || 0;
+  const minStock = parseInt(document.getElementById('f-minstock').value) || 5;
+  const notas = document.getElementById('f-notas').value;
+  if(!nombre || !lote || !cad || qty < 1) { alert('Completa los campos obligatorios (*)'); return; }
+  
+  const t = today();
+  const ex = DB.inventario.find(i => i.clave === clave && i.lote === lote);
   let invId;
-  if(ex){ex.stock+=qty;invId=ex.id;}
-  else{const inv={id:uid(),clave,nombre,lote,caducidad:cad,temp,proveedorId:provId,stock:qty,minStock,costo,notas,fechaEntrada:t};DB.inventario.push(inv);invId=inv.id;}
-  DB.entradas.push({id:uid(),fecha:t,clave,nombre,lote,caducidad:cad,temp,proveedorId:provId,qty,costo,invId});
+  if(ex) { ex.stock += qty; invId = ex.id; }
+  else { const inv = {id: uid(), clave, nombre, lote, caducidad: cad, temp, proveedorId: provId, stock: qty, minStock, costo, notas, fechaEntrada: t}; DB.inventario.push(inv); invId = inv.id; }
+  DB.entradas.push({id: uid(), fecha: t, clave, nombre, lote, caducidad: cad, temp, proveedorId: provId, qty, costo, invId});
+  
   closeModal('modal-inventario');
-  ['f-clave','f-nombre','f-lote','f-caducidad','f-qty','f-costo','f-minstock','f-notas'].forEach(id=>document.getElementById(id).value='');
-  nav(cur,null);renderDashboard();
+  ['f-clave','f-nombre','f-lote','f-caducidad','f-qty','f-costo','f-minstock','f-notas'].forEach(id => document.getElementById(id).value = '');
+  await guardarDatosEnNube();
+  nav(cur, null); renderDashboard();
 }
-function saveSalida(){
-  const invId=parseInt(document.getElementById('fs-producto').value)||0;
-  const lote=document.getElementById('fs-lote').value;
-  const clienteId=parseInt(document.getElementById('fs-cliente').value)||0;
-  const vendedor=document.getElementById('fs-vendedor').value;
-  const qty=parseInt(document.getElementById('fs-qty').value)||0;
-  const precio=parseFloat(document.getElementById('fs-precio').value)||0;
-  const fecha=document.getElementById('fs-fecha').value;
-  const ref=document.getElementById('fs-ref').value;
-  if(!invId||!clienteId||qty<1||precio<=0){alert('Completa todos los campos obligatorios (*)');return;}
-  const inv=DB.inventario.find(i=>i.id===invId);
-  if(!inv||inv.stock<qty){alert('Stock insuficiente. Disponible: '+(inv?inv.stock:0));return;}
-  inv.stock-=qty;
-  DB.salidas.push({id:uid(),fecha,clave:inv.clave,nombre:inv.nombre,lote,clienteId,vendedor,qty,precio,costo:inv.costo,ref});
-  closeModal('modal-salida');nav(cur,null);renderDashboard();
+
+async function saveSalida() {
+  const invId = parseInt(document.getElementById('fs-producto').value) || 0;
+  const lote = document.getElementById('fs-lote').value;
+  const clienteId = parseInt(document.getElementById('fs-cliente').value) || 0;
+  const vendedor = document.getElementById('fs-vendedor').value;
+  const qty = parseInt(document.getElementById('fs-qty').value) || 0;
+  const precio = parseFloat(document.getElementById('fs-precio').value) || 0;
+  const fecha = document.getElementById('fs-fecha').value;
+  const ref = document.getElementById('fs-ref').value;
+  if(!invId || !clienteId || qty < 1 || precio <= 0) { alert('Completa todos los campos obligatorios (*)'); return; }
+  
+  const inv = DB.inventario.find(i => i.id === invId);
+  if(!inv || inv.stock < qty) { alert('Stock insuficiente. Disponible: ' + (inv ? inv.stock : 0)); return; }
+  inv.stock -= qty;
+  DB.salidas.push({id: uid(), fecha, clave: inv.clave, nombre: inv.nombre, lote, clienteId, vendedor, qty, precio, costo: inv.costo, ref});
+  
+  closeModal('modal-salida');
+  await guardarDatosEnNube();
+  nav(cur, null); renderDashboard();
 }
-function saveProveedor(){
-  const nombre=document.getElementById('fp-nombre').value.trim();if(!nombre){alert('Ingresa el nombre');return;}
-  DB.proveedores.push({id:uid(),nombre,contacto:document.getElementById('fp-contacto').value,tel:document.getElementById('fp-tel').value,email:document.getElementById('fp-email').value,rfc:document.getElementById('fp-rfc').value,credito:parseFloat(document.getElementById('fp-credito').value)||0,dias:parseInt(document.getElementById('fp-dias').value)||0,tipo:document.getElementById('fp-tipo').value,estado:document.getElementById('fp-estado').value,notas:document.getElementById('fp-notas').value,saldo:0});
-  closeModal('modal-proveedor');['fp-nombre','fp-contacto','fp-tel','fp-email','fp-rfc','fp-credito','fp-dias','fp-notas'].forEach(id=>document.getElementById(id).value='');
+
+async function saveProveedor() {
+  const nombre = document.getElementById('fp-nombre').value.trim(); if(!nombre) { alert('Ingresa el nombre'); return; }
+  DB.proveedores.push({id: uid(), nombre, contacto: document.getElementById('fp-contacto').value, tel: document.getElementById('fp-tel').value, email: document.getElementById('fp-email').value, rfc: document.getElementById('fp-rfc').value, credito: parseFloat(document.getElementById('fp-credito').value) || 0, dias: parseInt(document.getElementById('fp-dias').value) || 0, tipo: document.getElementById('fp-tipo').value, estado: document.getElementById('fp-estado').value, notas: document.getElementById('fp-notas').value, saldo: 0});
+  closeModal('modal-proveedor'); ['fp-nombre','fp-contacto','fp-tel','fp-email','fp-rfc','fp-credito','fp-dias','fp-notas'].forEach(id => document.getElementById(id).value = '');
+  await guardarDatosEnNube();
   renderProveedores();
 }
-function saveCliente(){
-  const nombre=document.getElementById('fc-nombre').value.trim();if(!nombre){alert('Ingresa el nombre');return;}
-  DB.clientes.push({id:uid(),nombre,tipo:document.getElementById('fc-tipo').value,contacto:document.getElementById('fc-contacto').value,tel:document.getElementById('fc-tel').value,email:document.getElementById('fc-email').value,rfc:document.getElementById('fc-rfc').value,credito:parseFloat(document.getElementById('fc-credito').value)||0,dir:document.getElementById('fc-dir').value,saldo:0});
-  closeModal('modal-cliente');['fc-nombre','fc-contacto','fc-tel','fc-email','fc-rfc','fc-credito','fc-dir'].forEach(id=>document.getElementById(id).value='');
+
+async function saveCliente() {
+  const nombre = document.getElementById('fc-nombre').value.trim(); if(!nombre) { alert('Ingresa el nombre'); return; }
+  DB.clientes.push({id: uid(), nombre, tipo: document.getElementById('fc-tipo').value, contacto: document.getElementById('fc-contacto').value, tel: document.getElementById('fc-tel').value, email: document.getElementById('fc-email').value, rfc: document.getElementById('fc-rfc').value, credito: parseFloat(document.getElementById('fc-credito').value) || 0, dir: document.getElementById('fc-dir').value, saldo: 0});
+  closeModal('modal-cliente'); ['fc-nombre','fc-contacto','fc-tel','fc-email','fc-rfc','fc-credito','fc-dir'].forEach(id => document.getElementById(id).value = '');
+  await guardarDatosEnNube();
   renderClientes();
 }
-function saveGasto(){
-  const concepto=document.getElementById('fg-concepto').value.trim();
-  const monto2=parseFloat(document.getElementById('fg-monto').value)||0;
-  if(!concepto||monto2<=0){alert('Ingresa concepto y monto');return;}
-  DB.gastos.push({id:uid(),fecha:document.getElementById('fg-fecha').value,concepto,categoria:document.getElementById('fg-categoria').value,ref:document.getElementById('fg-ref').value,monto:monto2,comprobante:document.getElementById('fg-comprobante').value,deducible:document.getElementById('fg-deducible').value});
-  closeModal('modal-gasto');['fg-concepto','fg-ref','fg-monto'].forEach(id=>document.getElementById(id).value='');
-  renderGastos();renderDashboard();
+
+async function saveGasto() {
+  const concepto = document.getElementById('fg-concepto').value.trim();
+  const monto2 = parseFloat(document.getElementById('fg-monto').value) || 0;
+  if(!concepto || monto2 <= 0) { alert('Ingresa concepto y monto'); return; }
+  DB.gastos.push({id: uid(), fecha: document.getElementById('fg-fecha').value, concepto, categoria: document.getElementById('fg-categoria').value, ref: document.getElementById('fg-ref').value, monto: monto2, comprobante: document.getElementById('fg-comprobante').value, deducible: document.getElementById('fg-deducible').value});
+  closeModal('modal-gasto'); ['fg-concepto','fg-ref','fg-monto'].forEach(id => document.getElementById(id).value = '');
+  await guardarDatosEnNube();
+  renderGastos(); renderDashboard();
 }
-function delItem(arr,id,sec){const i=arr.findIndex(x=>x.id===id);if(i>-1)arr.splice(i,1);({inventario:renderInventario,entradas:renderEntradas,salidas:renderSalidas,proveedores:renderProveedores,clientes:renderClientes,gastos:renderGastos}[sec]||renderInventario)();renderDashboard();}
-function openSalidaFromInv(invId){fillSalidaSelects();document.getElementById('fs-producto').value=invId;fillSalidaProduct();openModal('modal-salida');}
+
+async function delItem(arr, id, sec) {
+  const i = arr.findIndex(x => x.id === id);
+  if(i > -1) arr.splice(i, 1);
+  await guardarDatosEnNube();
+  ({inventario:renderInventario, entradas:renderEntradas, salidas:renderSalidas, proveedores:renderProveedores, clientes:renderClientes, gastos:renderGastos}[sec] || renderInventario)();
+  renderDashboard();
+}
+
+function openSalidaFromInv(invId) { fillSalidaSelects(); document.getElementById('fs-producto').value = invId; fillSalidaProduct(); openModal('modal-salida'); }
+
 // RENDERS
 function renderDashboard(){
-  document.getElementById('ds-skus').textContent=DB.inventario.length;
-  document.getElementById('ds-cad').textContent=DB.inventario.filter(i=>{const d=daysUntil(i.caducidad);return d>=0&&d<=30;}).length;
-  document.getElementById('ds-cli').textContent=DB.clientes.length;
-  document.getElementById('ds-prov').textContent=DB.proveedores.filter(p=>p.estado==='activo').length;
-  const totalVenta=DB.salidas.reduce((a,s)=>a+s.qty*s.precio,0);
-  const totalCMV=DB.salidas.reduce((a,s)=>a+s.qty*s.costo,0);
-  const totalGas=DB.gastos.reduce((a,g)=>a+g.monto,0);
-  document.getElementById('ds-venta').textContent=mxn(totalVenta);
-  document.getElementById('ds-venta-sub').textContent=DB.salidas.length+' movimientos';
-  document.getElementById('ds-costo').textContent=mxn(totalCMV+totalGas);
-  const ac=DB.inventario.filter(i=>{const s=stockStatus(i);const c=cadStatus(i.caducidad);return s.key!=='ok'||c.key!=='ok';}).length;
-  const b=document.getElementById('badge-inv');b.textContent=ac;b.style.display=ac?'':'none';
-  // VENDEDORES
-  const vd=VENDEDORES.map(v=>{const r=DB.salidas.filter(s=>s.vendedor===v);const t=r.reduce((a,s)=>a+s.qty*s.precio,0);return{v,t,pzas:r.reduce((a,s)=>a+s.qty,0),ops:r.length};});
-  const mx=Math.max(...vd.map(x=>x.t),1);
-  const vp=document.getElementById('vnd-panel');
-  vp.innerHTML=!DB.salidas.length?'<div style="color:var(--text3);font-size:13px;text-align:center;padding:12px">Sin ventas aún</div>':vd.map(d=>`<div class="vnd-row"><div class="vnd-name">${d.v}</div><div class="vnd-bar-wrap"><div class="vnd-bar-fill" style="width:${Math.round(d.t/mx*100)}%;background:${VND_C[d.v]}"></div></div><div class="vnd-amt">${mxn(d.t)}</div></div><div style="margin:-4px 0 8px 78px;font-size:11px;color:var(--text3)">${d.ops} op · ${d.pzas} pzas</div>`).join('');
-  document.getElementById('vnd-total').textContent=mxn(totalVenta);
-  // UTILIDADES
-  const neta=totalVenta-totalCMV-totalGas;
-  const margen=totalVenta>0?Math.round(neta/totalVenta*100):0;
-  document.getElementById('ut-ingresos').textContent=mxn(totalVenta);
-  document.getElementById('ut-cmv').textContent=mxn(totalCMV);
-  document.getElementById('ut-gastos').textContent=mxn(totalGas);
-  const ne=document.getElementById('ut-neta');ne.textContent=mxn(neta);ne.style.color=neta>=0?'var(--green)':'var(--red)';
-  const me=document.getElementById('ut-margen');me.textContent=margen+'% margen';me.style.color=margen>=20?'var(--green)':margen>=10?'var(--amber)':'var(--red)';
-  // ALERTAS
-  const al=DB.inventario.filter(i=>{const s=stockStatus(i);const c=cadStatus(i.caducidad);return s.key!=='ok'||c.key!=='ok';});
-  document.getElementById('alerts-panel').innerHTML=!al.length?'<div style="color:var(--text3);font-size:13px;text-align:center;padding:16px">Sin alertas activas ✓</div>':al.map(i=>{const cs=cadStatus(i.caducidad);const ss=stockStatus(i);const cl=(cs.key==='caducado'||ss.key==='caducado')?'alert-red':'alert-amber';return`<div class="alert-strip ${cl}">⚠ <strong>${i.nombre}</strong>${ss.key!=='ok'?' · '+ss.label+' ('+i.stock+' pzas)':''}${cs.key!=='ok'?' · '+cs.label:''}</div>`;}).join('');
-  // ACTIVIDAD
-  const acts=[...DB.entradas.map(e=>({d:e.fecha,t:'Entrada: '+e.nombre,s:'+'+e.qty+' pzas · Lote '+e.lote,c:'var(--green)'})),...DB.salidas.map(s=>({d:s.fecha,t:'Salida: '+s.nombre,s:s.qty+' pzas · '+cname(s.clienteId)+' · '+s.vendedor,c:'var(--accent)'})),...DB.gastos.map(g=>({d:g.fecha,t:'Gasto: '+g.concepto,s:mxn(g.monto)+' · '+g.categoria,c:'var(--amber)'}))].sort((a,b)=>b.d.localeCompare(a.d)).slice(0,8);
-  document.getElementById('recent-activity').innerHTML=!acts.length?'<div style="color:var(--text3);font-size:13px;text-align:center;padding:24px">Sin movimientos aún</div>':acts.map(a=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)"><div style="width:8px;height:8px;border-radius:50%;background:${a.c};margin-top:5px;flex-shrink:0"></div><div><div style="font-size:13px">${a.t}</div><div style="font-size:11px;color:var(--text3)">${a.s} · ${a.d}</div></div></div>`).join('');
+  document.getElementById('ds-skus').textContent = DB.inventario.length;
+  document.getElementById('ds-cad').textContent = DB.inventario.filter(i => { const d = daysUntil(i.caducidad); return d >= 0 && d <= 30; }).length;
+  document.getElementById('ds-cli').textContent = DB.clientes.length;
+  document.getElementById('ds-prov').textContent = DB.proveedores.filter(p => p.estado === 'activo').length;
+  const totalVenta = DB.salidas.reduce((a, s) => a + s.qty * s.precio, 0);
+  const totalCMV = DB.salidas.reduce((a, s) => a + s.qty * s.costo, 0);
+  const totalGas = DB.gastos.reduce((a, g) => a + g.monto, 0);
+  document.getElementById('ds-venta').textContent = mxn(totalVenta);
+  document.getElementById('ds-venta-sub').textContent = DB.salidas.length + ' movimientos';
+  document.getElementById('ds-costo').textContent = mxn(totalCMV + totalGas);
+  const ac = DB.inventario.filter(i => { const s = stockStatus(i); const c = cadStatus(i.caducidad); return s.key !== 'ok' || c.key !== 'ok'; }).length;
+  const b = document.getElementById('badge-inv'); b.textContent = ac; b.style.display = ac ? '' : 'none';
+  
+  const vd = VENDEDORES.map(v => { const r = DB.salidas.filter(s => s.vendedor === v); const t = r.reduce((a, s) => a + s.qty * s.precio, 0); return {v, t, pzas: r.reduce((a, s) => a + s.qty, 0), ops: r.length}; });
+  const mx = Math.max(...vd.map(x => x.t), 1);
+  const vp = document.getElementById('vnd-panel');
+  vp.innerHTML = !DB.salidas.length ? '<div style="color:var(--text3); font-size:13px; text-align:center; padding:12px">Sin ventas aún</div>' : vd.map(d => `<div class="vnd-row"><div class="vnd-name">${d.v}</div><div class="vnd-bar-wrap"><div class="vnd-bar-fill" style="width:${Math.round(d.t/mx*100)}%; background:${VND_C[d.v]}"></div></div><div class="vnd-amt">${mxn(d.t)}</div></div><div style="margin:-4px 0 8px 78px; font-size:11px; color:var(--text3)">${d.ops} op · ${d.pzas} pzas</div>`).join('');
+  document.getElementById('vnd-total').textContent = mxn(totalVenta);
+  
+  const neta = totalVenta - totalCMV - totalGas;
+  const margen = totalVenta > 0 ? Math.round(neta / totalVenta * 100) : 0;
+  document.getElementById('ut-ingresos').textContent = mxn(totalVenta);
+  document.getElementById('ut-cmv').textContent = mxn(totalCMV);
+  document.getElementById('ut-gastos').textContent = mxn(totalGas);
+  const ne = document.getElementById('ut-neta'); ne.textContent = mxn(neta); ne.style.color = neta >= 0 ? 'var(--green)' : 'var(--red)';
+  const me = document.getElementById('ut-margen'); me.textContent = margen + '% margen'; me.style.color = margen >= 20 ? 'var(--green)' : margen >= 10 ? 'var(--amber)' : 'var(--red)';
+  
+  const al = DB.inventario.filter(i => { const s = stockStatus(i); const c = cadStatus(i.caducidad); return s.key !== 'ok' || c.key !== 'ok'; });
+  document.getElementById('alerts-panel').innerHTML = !al.length ? '<div style="color:var(--text3); font-size:13px; text-align:center; padding:16px">Sin alertas activas ✓</div>' : al.map(i => { const cs = cadStatus(i.caducidad); const ss = stockStatus(i); const cl = (cs.key === 'caducado' || ss.key === 'caducado') ? 'alert-red' : 'alert-amber'; return `<div class="alert-strip ${cl}">⚠ <strong>${i.nombre}</strong>${ss.key!=='ok'?' · '+ss.label+' ('+i.stock+' pzas)':''}${cs.key!=='ok'?' · '+cs.label:''}</div>`; }).join('');
+  
+  const acts = [...DB.entradas.map(e => ({d:e.fecha, t:'Entrada: '+e.nombre, s:'+'+e.qty+' pzas · Lote '+e.lote, c:'var(--green)'})), ...DB.salidas.map(s => ({d:s.fecha, t:'Salida: '+s.nombre, s:s.qty+' pzas · '+cname(s.clienteId)+' · '+s.vendedor, c:'var(--accent)'})), ...DB.gastos.map(g => ({d:g.fecha, t:'Gasto: '+g.concepto, s:mxn(g.monto)+' · '+g.categoria, c:'var(--amber)'}))].sort((a,b) => b.d.localeCompare(a.d)).slice(0,8);
+  document.getElementById('recent-activity').innerHTML = !acts.length ? '<div style="color:var(--text3); font-size:13px; text-align:center; padding:24px">Sin movimientos aún</div>' : acts.map(a => `<div style="display:flex; align-items:flex-start; gap:10px; padding:10px 16px; border-bottom:1px solid var(--border)"><div style="width:8px; height:8px; border-radius:50%; background:${a.c}; margin-top:5px; flex-shrink:0"></div><div><div style="font-size:13px">${a.t}</div><div style="font-size:11px; color:var(--text3)">${a.s} · ${a.d}</div></div></div>`).join('');
 }
+
 function renderInventario(){
-  const q=(document.getElementById('inv-search').value||'').toLowerCase();
-  const ft=document.getElementById('inv-filter-temp').value;
-  const fs=document.getElementById('inv-filter-status').value;
-  const rows=DB.inventario.filter(i=>{
-    if(q&&!i.nombre.toLowerCase().includes(q)&&!i.clave.toLowerCase().includes(q)&&!i.lote.toLowerCase().includes(q))return false;
-    if(ft&&i.temp!==ft)return false;
-    if(fs){const s=stockStatus(i);const c=cadStatus(i.caducidad);if(fs==='ok'&&(s.key!=='ok'||c.key!=='ok'))return false;if(fs==='bajo'&&s.key!=='bajo')return false;if(fs==='caducando'&&c.key!=='caducando')return false;if(fs==='caducado'&&c.key!=='caducado')return false;}
+  const q = (document.getElementById('inv-search').value || '').toLowerCase();
+  const ft = document.getElementById('inv-filter-temp').value;
+  const fs = document.getElementById('inv-filter-status').value;
+  const rows = DB.inventario.filter(i => {
+    if(q && !i.nombre.toLowerCase().includes(q) && !i.clave.toLowerCase().includes(q) && !i.lote.toLowerCase().includes(q)) return false;
+    if(ft && i.temp !== ft) return false;
+    if(fs){ const s = stockStatus(i); const c = cadStatus(i.caducidad); if(fs==='ok' && (s.key!=='ok' || c.key!=='ok')) return false; if(fs==='bajo' && s.key!=='bajo') return false; if(fs==='caducando' && c.key!=='caducando') return false; if(fs==='caducado' && c.key!=='caducado') return false; }
     return true;
   });
-  const tb=document.getElementById('inv-tbody');
-  if(!rows.length){tb.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:24px">Sin productos.</td></tr>';return;}
-  tb.innerHTML=rows.map(i=>{
-    const cs=cadStatus(i.caducidad);const ss=stockStatus(i);
-    const pct=Math.min(100,Math.round(i.stock/Math.max(i.minStock*3,1)*100));
-    const bc=ss.key==='bajo'?'var(--amber)':ss.key==='caducado'?'var(--red)':'var(--green)';
-    return`<tr><td><span class="mono">${i.clave}</span></td><td><div style="font-weight:500">${i.nombre}</div><div style="font-size:11px;color:var(--text3)">${i.notas||''}</div></td><td><span class="mono">${i.lote}</span></td><td style="font-size:12px">${i.caducidad}</td><td><span class="temp-chip ${i.temp==='fria'?'temp-cold':'temp-ambient'}">${i.temp==='fria'?'❄ 2–8°C':'🌡 Amb.'}</span></td><td style="font-size:12px">${pname(i.proveedorId)}</td><td style="font-family:var(--mono);color:var(--amber)">${mxn(i.costo)}</td><td><div style="display:flex;align-items:center;gap:8px"><span style="font-weight:600;font-family:var(--mono)">${i.stock}</span><div style="width:50px"><div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${bc}"></div></div></div></div></td><td><span class="badge ${cs.cls}" style="margin-bottom:3px">${cs.label}</span><br><span class="badge ${ss.cls}">${ss.label}</span></td><td><button class="btn btn-ghost btn-sm" onclick="openSalidaFromInv(${i.id})">Salida</button> <button class="btn btn-danger btn-sm" onclick="if(confirm('¿Eliminar?'))delItem(DB.inventario,${i.id},'inventario')">✕</button></td></tr>`;
+  const tb = document.getElementById('inv-tbody');
+  if(!rows.length){ tb.innerHTML = '<tr><td colspan="10" style="text-align:center; color:var(--text3); padding:24px">Sin productos.</td></tr>'; return; }
+  tb.innerHTML = rows.map(i => {
+    const cs = cadStatus(i.caducidad); const ss = stockStatus(i);
+    const pct = Math.min(100, Math.round(i.stock / Math.max(i.minStock*3, 1) * 100));
+    const bc = ss.key==='bajo' ? 'var(--amber)' : ss.key==='caducado' ? 'var(--red)' : 'var(--green)';
+    return `<tr><td><span class="mono">${i.clave}</span></td><td><div style="font-weight:500">${i.nombre}</div><div style="font-size:11px; color:var(--text3)">${i.notas||''}</div></td><td><span class="mono">${i.lote}</span></td><td style="font-size:12px">${i.caducidad}</td><td><span class="temp-chip ${i.temp==='fria'?'temp-cold':'temp-ambient'}">${i.temp==='fria'?'❄ 2–8°C':'🌡 Amb.'}</span></td><td style="font-size:12px">${pname(i.proveedorId)}</td><td style="font-family:var(--mono); color:var(--amber)">${mxn(i.costo)}</td><td><div style="display:flex; align-items:center; gap:8px"><span style="font-weight:600; font-family:var(--mono)">${i.stock}</span><div style="width:50px"><div class="prog-bar"><div class="prog-fill" style="width:${pct}%; background:${bc}"></div></div></div></div></td><td><span class="badge ${cs.cls}" style="margin-bottom:3px">${cs.label}</span><br><span class="badge ${ss.cls}">${ss.label}</span></td><td><button class="btn btn-ghost btn-sm" onclick="openSalidaFromInv(${i.id})">Salida</button> <button class="btn btn-danger btn-sm" onclick="if(confirm('¿Eliminar?'))delItem(DB.inventario,${i.id},'inventario')">✕</button></td></tr>`;
   }).join('');
 }
+
 function renderEntradas(){
-  const q=(document.getElementById('ent-search').value||'').toLowerCase();
-  const rows=DB.entradas.filter(e=>!q||e.nombre.toLowerCase().includes(q)||e.clave.toLowerCase().includes(q)||e.lote.toLowerCase().includes(q));
-  const tb=document.getElementById('ent-tbody');
-  if(!rows.length){tb.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:24px">Sin entradas.</td></tr>';return;}
-  tb.innerHTML=rows.map(e=>`<tr><td>${e.fecha}</td><td><span class="mono">${e.clave}</span></td><td>${e.nombre}</td><td><span class="mono">${e.lote}</span></td><td style="font-size:12px">${e.caducidad}</td><td><span class="temp-chip ${e.temp==='fria'?'temp-cold':'temp-ambient'}">${e.temp==='fria'?'❄':'🌡'}</span></td><td style="font-size:12px">${pname(e.proveedorId)}</td><td style="font-weight:600;font-family:var(--mono)">${e.qty} pzas</td><td style="color:var(--amber);font-family:var(--mono)">${mxn(e.costo)}</td><td style="font-weight:600;color:var(--red);font-family:var(--mono)">${mxn(e.qty*e.costo)}</td></tr>`).join('');
+  const q = (document.getElementById('ent-search').value || '').toLowerCase();
+  const rows = DB.entradas.filter(e => !q || e.nombre.toLowerCase().includes(q) || e.clave.toLowerCase().includes(q) || e.lote.toLowerCase().includes(q));
+  const tb = document.getElementById('ent-tbody');
+  if(!rows.length){ tb.innerHTML = '<tr><td colspan="10" style="text-align:center; color:var(--text3); padding:24px">Sin entradas.</td></tr>'; return; }
+  tb.innerHTML = rows.map(e => `<tr><td>${e.fecha}</td><td><span class="mono">${e.clave}</span></td><td>${e.nombre}</td><td><span class="mono">${e.lote}</span></td><td style="font-size:12px">${e.caducidad}</td><td><span class="temp-chip ${e.temp==='fria'?'temp-cold':'temp-ambient'}">${e.temp==='fria'?'❄':'🌡'}</span></td><td style="font-size:12px">${pname(e.proveedorId)}</td><td style="font-weight:600; font-family:var(--mono)">${e.qty} pzas</td><td style="color:var(--amber); font-family:var(--mono)">${mxn(e.costo)}</td><td style="font-weight:600; color:var(--red); font-family:var(--mono)">${mxn(e.qty*e.costo)}</td></tr>`).join('');
 }
+
 function renderSalidas(){
-  const q=(document.getElementById('sal-search').value||'').toLowerCase();
-  const fv=document.getElementById('sal-filter-vnd').value;
-  const rows=DB.salidas.filter(s=>{if(fv&&s.vendedor!==fv)return false;return !q||s.nombre.toLowerCase().includes(q)||s.clave.toLowerCase().includes(q)||(cname(s.clienteId)||'').toLowerCase().includes(q);});
-  const tb=document.getElementById('sal-tbody');
-  if(!rows.length){tb.innerHTML='<tr><td colspan="11" style="text-align:center;color:var(--text3);padding:24px">Sin salidas.</td></tr>';return;}
-  tb.innerHTML=rows.map(s=>{const ct=ctype(s.clienteId);const util=s.qty*(s.precio-s.costo);return`<tr><td>${s.fecha}</td><td><span class="mono">${s.clave}</span></td><td>${s.nombre}</td><td><span class="mono">${s.lote}</span></td><td>${cname(s.clienteId)}</td><td><span class="client-type ${ctypeClass(ct)}">${ct}</span></td><td><span class="badge ${VND_B[s.vendedor]||'badge-blue'}">${s.vendedor}</span></td><td style="font-weight:600;font-family:var(--mono)">${s.qty} pzas</td><td style="font-family:var(--mono)">${mxn(s.precio)}</td><td style="font-weight:600;color:var(--green);font-family:var(--mono)">${mxn(s.qty*s.precio)}</td><td style="font-weight:600;font-family:var(--mono);color:${util>=0?'var(--teal)':'var(--red)'}">${mxn(util)}</td></tr>`;}).join('');
+  const q = (document.getElementById('sal-search').value || '').toLowerCase();
+  const fv = document.getElementById('sal-filter-vnd').value;
+  const rows = DB.salidas.filter(s => { if(fv && s.vendedor!==fv) return false; return !q || s.nombre.toLowerCase().includes(q) || s.clave.toLowerCase().includes(q) || (cname(s.clienteId)||"").toLowerCase().includes(q); });
+  const tb = document.getElementById('sal-tbody');
+  if(!rows.length){ tb.innerHTML = '<tr><td colspan="11" style="text-align:center; color:var(--text3); padding:24px">Sin salidas.</td></tr>'; return; }
+  tb.innerHTML = rows.map(s => { const ct = ctype(s.clienteId); const util = s.qty * (s.precio - s.costo); return `<tr><td>${s.fecha}</td><td><span class="mono">${s.clave}</span></td><td>${s.nombre}</td><td><span class="mono">${s.lote}</span></td><td>${cname(s.clienteId)}</td><td><span class="client-type ${ctypeClass(ct)}">${ct}</span></td><td><span class="badge ${VND_B[s.vendedor]||'badge-blue'}">${s.vendedor}</span></td><td style="font-weight:600; font-family:var(--mono)">${s.qty} pzas</td><td style="font-family:var(--mono)">${mxn(s.precio)}</td><td style="font-weight:600; color:var(--green); font-family:var(--mono)">${mxn(s.qty*s.precio)}</td><td style="font-weight:600; font-family:var(--mono); color:${util>=0?'var(--teal)':'var(--red)'}">${mxn(util)}</td></tr>`; }).join('');
 }
+
 function renderProveedores(){
-  const q=(document.getElementById('prov-search').value||'').toLowerCase();
-  const rows=DB.proveedores.filter(p=>!q||p.nombre.toLowerCase().includes(q)||p.contacto.toLowerCase().includes(q));
-  const tb=document.getElementById('prov-tbody');
-  if(!rows.length){tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:24px">Sin proveedores.</td></tr>';return;}
-  tb.innerHTML=rows.map(p=>`<tr><td><div style="font-weight:500">${p.nombre}</div><span class="badge ${p.tipo==='formal'?'badge-green':'badge-amber'}" style="margin-top:3px">${p.tipo==='formal'?'Formal':'Alterno'}</span></td><td>${p.contacto||'—'}</td><td>${p.tel||'—'}</td><td style="font-size:12px">${p.email||'—'}</td><td>${mxn(p.credito)}</td><td>${p.dias} días</td><td style="color:var(--amber);font-weight:600">${mxn(p.saldo)}</td><td><span class="badge ${p.estado==='activo'?'badge-blue':'badge-red'}">${p.estado}</span></td><td><button class="btn btn-danger btn-sm" onclick="if(confirm('¿Eliminar?'))delItem(DB.proveedores,${p.id},'proveedores')">✕</button></td></tr>`).join('');
+  const q = (document.getElementById('prov-search').value || '').toLowerCase();
+  const rows = DB.proveedores.filter(p => !q || p.nombre.toLowerCase().includes(q) || p.contacto.toLowerCase().includes(q));
+  const tb = document.getElementById('prov-tbody');
+  if(!rows.length){ tb.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text3); padding:24px">Sin proveedores.</td></tr>'; return; }
+  tb.innerHTML = rows.map(p => `<tr><td><div style="font-weight:500">${p.nombre}</div><span class="badge ${p.tipo==='formal'?'badge-green':'badge-amber'}" style="margin-top:3px">${p.tipo==='formal'?'Formal':'Alterno'}</span></td><td>${p.contacto||'—'}</td><td>${p.tel||'—'}</td><td style="font-size:12px">${p.email||'—'}</td><td>${mxn(p.credito)}</td><td>${p.dias} días</td><td style="color:var(--amber); font-weight:600">${mxn(p.saldo)}</td><td><span class="badge ${p.estado==='activo'?'badge-blue':'badge-red'}">${p.estado}</span></td><td><button class="btn btn-danger btn-sm" onclick="if(confirm('¿Eliminar?'))delItem(DB.proveedores,${p.id},'proveedores')">✕</button></td></tr>`).join('');
 }
+
 function renderClientes(){
-  const q=(document.getElementById('cli-search').value||'').toLowerCase();
-  const ft=document.getElementById('cli-filter-tipo').value;
-  const rows=DB.clientes.filter(c=>{if(ft&&c.tipo!==ft)return false;return !q||c.nombre.toLowerCase().includes(q)||c.contacto.toLowerCase().includes(q);});
-  const tb=document.getElementById('cli-tbody');
-  if(!rows.length){tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:24px">Sin clientes.</td></tr>';return;}
-  tb.innerHTML=rows.map(c=>`<tr><td><div style="font-weight:500">${c.nombre}</div><div style="font-size:11px;color:var(--text3)">${c.dir||''}</div></td><td><span class="client-type ${ctypeClass(c.tipo)}">${c.tipo}</span></td><td>${c.contacto||'—'}</td><td>${c.tel||'—'}</td><td><span class="mono" style="font-size:11px">${c.rfc||'—'}</span></td><td>${mxn(c.credito)}</td><td style="color:${c.saldo>0?'var(--amber)':'var(--text3)'};font-weight:600">${mxn(c.saldo)}</td><td><span class="badge badge-green">Activo</span></td><td><button class="btn btn-danger btn-sm" onclick="if(confirm('¿Eliminar?'))delItem(DB.clientes,${c.id},'clientes')">✕</button></td></tr>`).join('');
+  const q = (document.getElementById('cli-search').value || '').toLowerCase();
+  const ft = document.getElementById('cli-filter-tipo').value;
+  const rows = DB.clientes.filter(c => { if(ft && c.tipo!==ft) return false; return !q || c.nombre.toLowerCase().includes(q) || c.contacto.toLowerCase().includes(q); });
+  const tb = document.getElementById('cli-tbody');
+  if(!rows.length){ tb.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text3); padding:24px">Sin clientes.</td></tr>'; return; }
+  tb.innerHTML = rows.map(c => `<tr><td><div style="font-weight:500">${c.nombre}</div><div style="font-size:11px; color:var(--text3)">${c.dir||''}</div></td><td><span class="client-type ${ctypeClass(c.tipo)}">${c.tipo}</span></td><td>${c.contacto||'—'}</td><td>${c.tel||'—'}</td><td><span class="mono" style="font-size:11px">${c.rfc||'—'}</span></td><td>${mxn(c.credito)}</td><td style="color:${c.saldo>0?'var(--amber)':'var(--text3)'}; font-weight:600">${mxn(c.saldo)}</td><td><span class="badge badge-green">Activo</span></td><td><button class="btn btn-danger btn-sm" onclick="if(confirm('¿Eliminar?'))delItem(DB.clientes,${c.id},'clientes')">✕</button></td></tr>`; }).join('');
 }
+
 function renderGastos(){
-  const rows=DB.gastos;const tb=document.getElementById('gas-tbody');
-  if(!rows.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:24px">Sin gastos.</td></tr>';return;}
-  const catB={Flete:'badge-amber',Almacén:'badge-purple',Personal:'badge-blue',Servicios:'badge-green',Otros:''};
-  tb.innerHTML=rows.map(g=>`<tr><td>${g.fecha}</td><td style="font-weight:500">${g.concepto}</td><td><span class="badge ${catB[g.categoria]||''}">${g.categoria}</span></td><td style="font-size:12px">${g.ref||'—'}</td><td style="font-weight:600;color:var(--amber);font-family:var(--mono)">${mxn(g.monto)}</td><td><span class="badge ${g.comprobante==='Factura'?'badge-green':g.comprobante==='Ticket'?'badge-blue':'badge-red'}">${g.comprobante}</span></td><td><span class="badge ${g.deducible==='Sí'?'badge-teal':'badge-red'}">${g.deducible}</span></td><td><button class="btn btn-danger btn-sm" onclick="if(confirm('¿Eliminar?'))delItem(DB.gastos,${g.id},'gastos')">✕</button></td></tr>`).join('');
-  ['Flete','Almacén','Personal','Servicios','Otros'].forEach(cat=>{
-    const tot=rows.filter(g=>g.categoria===cat).reduce((a,g)=>a+g.monto,0);
-    const key='g-'+cat.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    const el=document.getElementById(key);if(el)el.textContent=mxn(tot);
+  const rows = DB.gastos; const tb = document.getElementById('gas-tbody');
+  if(!rows.length){ tb.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text3); padding:24px">Sin gastos.</td></tr>'; return; }
+  const catB = {Flete:'badge-amber', Almacén:'badge-purple', Personal:'badge-blue', Servicios:'badge-green', Otros:''};
+  tb.innerHTML = rows.map(g => `<tr><td>${g.fecha}</td><td style="font-weight:500">${g.concepto}</td><td><span class="badge ${catB[g.categoria]||''}">${g.categoria}</span></td><td style="font-size:12px">${g.ref||'—'}</td><td style="font-weight:600; color:var(--amber); font-family:var(--mono)">${mxn(g.monto)}</td><td><span class="badge ${g.comprobante==='Factura'?'badge-green':g.comprobante==='Ticket'?'badge-blue':'badge-red'}">${g.comprobante}</span></td><td><span class="badge ${g.deducible==='Sí'?'badge-teal':'badge-red'}">${g.deducible}</span></td><td><button class="btn btn-danger btn-sm" onclick="if(confirm('¿Eliminar?'))delItem(DB.gastos,${g.id},'gastos')">✕</button></td></tr>`).join('');
+  
+  ['Flete','Almacén','Personal','Servicios','Otros'].forEach(cat => {
+    const tot = rows.filter(g => g.categoria === cat).reduce((a, g) => a + g.monto, 0);
+    const key = 'g-' + cat.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const el = document.getElementById(key); if(el) el.textContent = mxn(tot);
   });
-  document.getElementById('g-total').textContent=mxn(rows.reduce((a,g)=>a+g.monto,0));
+  document.getElementById('g-total').textContent = mxn(rows.reduce((a, g) => a + g.monto, 0));
 }
+
 function exportCSV(){
-  const maps={inventario:{data:DB.inventario,cols:['clave','nombre','lote','caducidad','temp','stock','costo']},entradas:{data:DB.entradas,cols:['fecha','clave','nombre','lote','qty','costo']},salidas:{data:DB.salidas,cols:['fecha','clave','nombre','lote','vendedor','qty','precio','costo','ref']},proveedores:{data:DB.proveedores,cols:['nombre','contacto','tel','email','rfc','tipo','estado']},clientes:{data:DB.clientes,cols:['nombre','tipo','contacto','tel','email','rfc']},gastos:{data:DB.gastos,cols:['fecha','concepto','categoria','ref','monto','comprobante','deducible']}};
-  const m=maps[cur];if(!m)return;
-  const csv=[m.cols.join(','),...m.data.map(r=>m.cols.map(c=>`"${r[c]||''}"`).join(','))].join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download=cur+'_'+today()+'.csv';a.click();
+  const maps = {inventario:{data:DB.inventario, cols:['clave','nombre','lote','caducidad','temp','stock','costo']}, entradas:{data:DB.entradas, cols:['fecha','clave','nombre','lote','qty','costo']}, salidas:{data:DB.salidas, cols:['fecha','clave','nombre','lote','vendedor','qty','precio','costo','ref']}, proveedores:{data:DB.proveedores, cols:['nombre','contacto','tel','email','rfc','tipo','estado']}, clientes:{data:DB.clientes, cols:['nombre','tipo','contacto','tel','email','rfc']}, gastos:{data:DB.gastos, cols:['fecha','concepto','categoria','ref','monto','comprobante','deducible']}};
+  const m = maps[cur]; if(!m) return;
+  const csv = [m.cols.join(','), ...m.data.map(r => m.cols.map(c => `"${r[c]||''}"`).join(','))].join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'})); a.download = cur + '_' + today() + '.csv'; a.click();
 }
-// INIT
-document.getElementById('today-date').textContent=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
-renderDashboard();
+
+// INIT - Inicialización cargando datos directo desde internet
+document.getElementById('today-date').textContent = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'long', year:'numeric'});
+cargarDatosDeNube();
 </script>
 </body>
 </html>
