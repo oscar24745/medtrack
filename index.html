@@ -650,9 +650,21 @@ function exportCSV(){
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'})); a.download = cur + '_' + today() + '.csv'; a.click();
 }
 
-// INIT - Inicialización cargando datos directo desde internet
+// INIT - Inicialización corregida para evitar congelamientos
 document.getElementById('today-date').textContent = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'long', year:'numeric'});
-cargarDatosDeNube();
+
+// Renderizamos el dashboard inmediatamente con la estructura base para que la página responda al tacto
+renderDashboard(); 
+
+// Cargamos de forma segura los datos de la nube sin congelar el navegador
+(async () => {
+  try {
+    console.log("Conectando con MedTrack en la nube...");
+    await cargarDatosDeNube();
+  } catch (e) {
+    console.error("Error crítico en inicialización: ", e);
+  }
+})();
 </script>
 </body>
 </html>
