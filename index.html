@@ -325,18 +325,18 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);}select optio
 
 <script>
 <script>
-// CONFIGURACIÓN DE SUPABASE
+<script>
+// CONFIGURACIÓN DE SUPABASE - Reemplaza con tus credenciales reales de Supabase si cambian
 const SUPABASE_URL = "https://ihwjftfogcctztxojoru.supabase.co/rest/v1/"; 
 const SUPABASE_KEY = "sb_publishable_reW2SqGGIQntg9HeOwLyEg_fFhHPtsy";
 
-// Inicialización correcta usando el objeto global del CDN
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Base de datos local en memoria que se sincronizará con la nube
+// Base de datos local en memoria que se sincronizará con la nube (Declarada una sola vez)
 let DB = {inventario:[], entradas:[], salidas:[], proveedores:[], clientes:[], gastos:[]};
 let cur = 'dashboard';
 let _id = 1000;
-const uid = () => ++_id;
+const uid = () => ++_id;;
 
 const VENDEDORES = ['Daniel','Oscar','Cesar','PROBISA'];
 const VND_C = {Daniel:'var(--accent)', Oscar:'var(--green)', Cesar:'var(--purple)', PROBISA:'var(--amber)'};
